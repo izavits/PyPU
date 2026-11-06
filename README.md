@@ -5,10 +5,10 @@
 [![CI](https://github.com/izavits/PyPU/actions/workflows/ci.yml/badge.svg)](https://github.com/izavits/PyPU/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/pypu-learn.svg)](https://pypi.org/project/pypu-learn/)
 [![Python versions](https://img.shields.io/pypi/pyversions/pypu-learn.svg)](https://pypi.org/project/pypu-learn/)
-[![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](LICENSE)
+[![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/izavits/PyPU/blob/main/LICENSE)
 
 > **Status: pre-alpha.** The common interface is in place and the methods are being ported.
-> See the [roadmap](ROADMAP.md).
+> See the [roadmap](https://github.com/izavits/PyPU/blob/main/ROADMAP.md).
 
 In PU learning the training data hold some examples labeled positive and many unlabeled
 examples, which are a mix of positives and negatives. No example is labeled negative. This
@@ -92,15 +92,17 @@ other SAR selection mechanisms), class-prior estimation, and PU-specific metrics
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup,
-how to add a model, and the release process. Changes are listed in
-[CHANGELOG.md](CHANGELOG.md).
+Contributions are welcome. See
+[CONTRIBUTING.md](https://github.com/izavits/PyPU/blob/main/CONTRIBUTING.md) for the
+development setup, how to add a model, and the release process. Changes are listed in
+[CHANGELOG.md](https://github.com/izavits/PyPU/blob/main/CHANGELOG.md).
 
 ## Citing
 
 If you use PyPU in your research, please cite it; GitHub's "Cite this repository" button uses
-[CITATION.cff](CITATION.cff).
+[CITATION.cff](https://github.com/izavits/PyPU/blob/main/CITATION.cff).
 
 ## License
 
-PyPU is distributed under the [BSD 3-Clause License](LICENSE).
+PyPU is distributed under the
+[BSD 3-Clause License](https://github.com/izavits/PyPU/blob/main/LICENSE).
