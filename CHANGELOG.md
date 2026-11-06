@@ -9,6 +9,24 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+### Added
+
+- `pypu.datasets`, for making PU data from fully labeled binary datasets:
+  - Labeling mechanisms, each returning PU labels `s`:
+    - `label_scar`: uniform (SCAR).
+    - `label_sar_knn`: by the distance from each positive to its nearest negatives, with
+      `bias="near"` or `"far"`.
+    - `label_sar_propensity`: a known logistic propensity on chosen features.
+    - `label_sar_cluster`: labels from only some k-means clusters of the positives.
+    - `label_sar_confidence`: by out-of-fold classifier confidence, with `bias="easy"` or
+      `"hard"`.
+  - `make_pu_split`: a stratified train/test split with PU labels on the training part.
+  - `make_case_control`: data for the case-control scenario.
+  - `pu_summary`, `pollution_from_label_frequency` and `label_frequency_from_pollution`.
+  - `legacy=True` on `label_scar` and `label_sar_knn` reproduces the labels of the
+    `create_pu_data` function used in the iFPU and iFPNU experiments.
+- The docstring examples run as part of the test suite.
+
 ## [0.0.1] - 2026-11-06
 
 ### Added

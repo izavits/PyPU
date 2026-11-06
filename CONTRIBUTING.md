@@ -51,9 +51,14 @@ that the package builds.
 src/pypu/
   base.py       BasePUClassifier: the interface every model implements
   models/       one module per method, registered in models/__init__.py
+  datasets/     PU data from labeled datasets
   utils/        validation and shared helpers
 tests/          pytest suite; test_model_contract.py runs on every registered model
 ```
+
+`pytest` also runs the examples in the docstrings, so keep their output exact. Print lists
+(`.tolist()`) or Python scalars (`int(...)`, `float(...)`) rather than NumPy arrays and
+scalars, whose repr differs between NumPy versions and platforms.
 
 ## Adding a model
 

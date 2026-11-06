@@ -28,7 +28,7 @@ pip install pypu-learn
 The package is imported as `pypu` and needs Python 3.11 or newer. (The PyPI name `pypu`
 belongs to an unrelated project, hence `pypu-learn`.)
 
-Until the first release is on PyPI, install from GitHub:
+To try features that are not released yet, install from GitHub:
 
 ```bash
 pip install git+https://github.com/izavits/PyPU.git
@@ -59,7 +59,45 @@ scores = clf.predict_proba(X_test)[:, 1]
 print("ROC AUC:", roc_auc_score(y_test, scores))
 ```
 
-Data utilities that turn labeled datasets into PU data in one call are coming in 0.1.0.
+## PU data from labeled datasets
+
+> New in the unreleased 0.1.0: install from GitHub to try it.
+
+`pypu.datasets` turns a fully labeled binary dataset into PU data, so methods can be compared
+against the true labels. `make_pu_split` does it in one call: a stratified train/test split,
+then PU labels on the training part.
+
+```python
+from sklearn.datasets import make_classification
+from sklearn.metrics import roc_auc_score
+
+from pypu.datasets import make_pu_split, pu_summary
+from pypu.models import NaivePU
+
+X, y = make_classification(n_samples=2000, weights=[0.8], random_state=0)
+X_train, X_test, s_train, y_train, y_test = make_pu_split(
+    X, y, label_frequency=0.3, mechanism="sar_knn", random_state=0
+)
+print(pu_summary(y_train, s_train))  # prior, label frequency, positives among the unlabeled
+
+clf = NaivePU(prior=y_train.mean()).fit(X_train, s_train)
+print("ROC AUC:", roc_auc_score(y_test, clf.predict_proba(X_test)[:, 1]))
+```
+
+The labeling mechanism decides which positives get labeled:
+
+| Function (`mechanism=`) | Labeled positives |
+| --- | --- |
+| `label_scar` (`"scar"`) | Chosen uniformly at random (SCAR) |
+| `label_sar_knn` (`"sar_knn"`) | Mostly near the negatives (`bias="near"`) or far from them (`bias="far"`), by distance to the nearest negatives |
+| `label_sar_propensity` (`"sar_propensity"`) | Each labeled with a known logistic propensity on chosen features, which can be returned |
+| `label_sar_cluster` (`"sar_cluster"`) | Taken from only some k-means clusters of the positives |
+| `label_sar_confidence` (`"sar_confidence"`) | Mostly the ones a classifier recognises easily (`bias="easy"`) or poorly (`bias="hard"`) |
+
+`label_frequency` is the fraction of positives that get labeled. To set the share of
+positives among the unlabeled samples instead, convert it with
+`label_frequency_from_pollution`. `make_case_control` makes data for the case-control
+scenario, where the unlabeled set is a separate sample with the population's class prior.
 
 ## The interface
 
@@ -87,8 +125,7 @@ Models that need the class prior π = P(y = 1) take it as a `prior` parameter.
 | `PUHellingerTree`, `PUHellingerForest` | Hellinger-distance decision trees and forests for PU data | planned (0.2.0) |
 | `NNPU`, `LBE`, `PUe`, `ALMPU` | Neural PU methods (optional PyTorch dependency) | planned (0.3.0) |
 
-Also planned: creating PU data from labeled datasets (uniform SCAR selection, KNN-biased and
-other SAR selection mechanisms), class-prior estimation, and PU-specific metrics.
+Also planned: class-prior estimation and PU-specific metrics.
 
 ## Contributing
 

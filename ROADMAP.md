@@ -31,33 +31,40 @@ are identical to the copies in `pu_monorepo/iFPNU/`, so the monorepo is the sing
 | `ElkanNoto`, `PUBagging`, `SpyEM`, `RankPruning` | `pu_monorepo/PU_Hellinger_Trees/pos_noisyneg/` | scikit-learn (SpyEM: pomegranate) |
 | Focal nnPU losses | `pu_monorepo/iFPNU/pu/losses.py` | torch |
 
-## Data utilities (`pypu.datasets`, 0.1.0)
+## Data utilities (`pypu.datasets`, 0.1.0): done
 
 Ported:
 
-- Uniform (SCAR) selection of the labeled positives.
-- KNN-biased (SAR) selection, with the neighbour bug fixed (see below) and a
-  `bias="far" | "near"` option.
-- Parameterisation by `pollution_ratio` (share of hidden positives among the unlabeled), from
-  `make_noisy_negatives`.
+- Uniform (SCAR) selection of the labeled positives: `label_scar`.
+- KNN-biased (SAR) selection with real nearest neighbours and a `bias="near" | "far"`
+  option: `label_sar_knn`. `bias="near"` is the mechanism of the old code (positives drawn
+  for hiding with probability proportional to their distance from the negatives).
+- `legacy=True` on both reproduces `create_pu_data` exactly, KNN shortcut included (see
+  porting note 1); the tests compare against a copy of the old function. The old `ratio` was
+  the fraction of positives *hidden*, so `ratio=r` corresponds to `label_frequency=1 - r`.
+- Parameterisation by pollution (share of positives among the unlabeled), from
+  `make_noisy_negatives`: `label_frequency_from_pollution`.
 
 New:
 
-- SAR by propensity on chosen features: labeling probability is a sigmoid of selected
-  features, so the true propensity is known.
-- SAR by cluster: labeled positives come only from some k-means clusters of the positives.
-- SAR by classifier confidence: easy positives are more likely to be labeled.
-- Case-control sampling: labeled positives drawn separately from the unlabeled population.
+- `label_sar_propensity`: labeling probability is a logistic function of selected features,
+  so the true propensity is known (returned with `return_propensity=True`).
+- `label_sar_cluster`: labeled positives come only from some k-means clusters of the
+  positives.
+- `label_sar_confidence`: easy (or hard) positives, by out-of-fold classifier confidence, are
+  more likely to be labeled.
+- `make_case_control`: every positive kept, negatives subsampled so the unlabeled set has the
+  class prior of the data.
 - `make_pu_split`: stratified train/test split with PU labels on the training part only.
 - `pu_summary`: true prior, label frequency and pollution of the unlabeled set.
 
 ## Porting notes
 
-1. **SAR-KNN selection.** `pu_data.py` (lines 44-45) averages the distance to the first
-   `n_neighbors` columns of an unsorted distance matrix, i.e. to the first k negatives in row
-   order rather than the k nearest. It also builds the full n×n distance matrix. The library
-   uses real nearest neighbours; a `legacy=True` flag can reproduce published numbers if
-   needed.
+1. **SAR-KNN selection (resolved).** `pu_data.py` (lines 44-45) averages the distance to the
+   first `n_neighbors` columns of an unsorted distance matrix, i.e. to the first k negatives
+   in row order rather than the k nearest. It also builds the full n×n distance matrix. The
+   copy in `pos_noisyneg/utils.py` sorts the distances first and is correct. PyPU uses real
+   nearest neighbours; `legacy=True` reproduces the old labels.
 2. **iFPU objective.** The non-negativity clip in `PUFLLossNonNegative` is commented out
    (`fpu_xgb.py` lines 48-49), so it computes the unbiased risk. The library default must
    match what the iFPU paper used.

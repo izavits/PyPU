@@ -41,6 +41,16 @@ def test_models_are_imported_lazily():
     assert result.stdout.strip() == "False"
 
 
+def test_datasets_public_functions_are_documented():
+    import pypu.datasets
+
+    for name in pypu.datasets.__all__:
+        obj = getattr(pypu.datasets, name)
+        assert obj.__module__.startswith("pypu.datasets.")
+        if name != "PUSplit":
+            assert "Examples\n" in obj.__doc__, f"{name} has no Examples section"
+
+
 def test_show_versions(capsys):
     pypu.show_versions()
     out = capsys.readouterr().out

@@ -85,8 +85,9 @@ include = [
 # ---------------------------------------------------------------- tests
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = ["-ra", "--strict-markers", "--strict-config"]
+# src/pypu is collected for the docstring examples.
+testpaths = ["tests", "src/pypu"]
+addopts = ["-ra", "--strict-markers", "--strict-config", "--doctest-modules"]
 xfail_strict = true
 
 [tool.coverage.run]
