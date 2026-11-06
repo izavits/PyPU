@@ -42,13 +42,13 @@ def test_models_are_imported_lazily():
     assert result.stdout.strip() == "False"
 
 
-@pytest.mark.parametrize("module_name", ["pypu.datasets", "pypu.metrics"])
+@pytest.mark.parametrize("module_name", ["pypu.datasets", "pypu.metrics", "pypu.prior"])
 def test_public_functions_are_documented(module_name):
     module = importlib.import_module(module_name)
     for name in module.__all__:
         obj = getattr(module, name)
         assert obj.__module__.startswith(f"{module_name}.")
-        if name != "PUSplit":
+        if name not in ("PUSplit", "BasePriorEstimator"):
             assert "Examples\n" in obj.__doc__, f"{name} has no Examples section"
 
 

@@ -154,6 +154,32 @@ works with `clone`, `Pipeline` and `GridSearchCV`.
 
 Models that need the class prior π = P(y = 1) take it as a `prior` parameter.
 
+## Estimating the class prior
+
+> New in the unreleased 0.1.0: install from GitHub to try it.
+
+When the prior is unknown, estimate it from the PU training data with `pypu.prior`, assuming
+SCAR labels:
+
+```python
+from pypu.models import IFPU
+from pypu.prior import BBEPrior
+
+estimator = BBEPrior().fit(X_train, s_train)
+clf = IFPU(prior=estimator.prior_).fit(X_train, s_train)
+```
+
+- `BBEPrior`: Best Bin Estimation (Garg et al., NeurIPS 2021). It needs a region where
+  (almost) all samples are positive, and copes with overlapping classes.
+- `ElkanNotoPrior`: the estimators of Elkan and Noto (KDD 2008), `method="e1"`, `"e2"` or
+  `"e3"`. They are accurate when the classes barely overlap and overestimate the prior when
+  they overlap more.
+
+Both also estimate the label frequency (`label_frequency_`) and the share of positives among
+the unlabeled samples (`pollution_`). Estimates are biased upwards when the classifier
+cannot isolate a purely positive region, and noisy with few labeled positives; a more
+flexible classifier (`estimator=`) can help BBE on non-linear data.
+
 ## Methods
 
 | Model | Description | Status |
@@ -175,8 +201,6 @@ from pypu.models import IFPU
 
 clf = IFPU(prior=0.2).fit(X_train, s_train)  # prior: fraction of positives in the training data
 ```
-
-Also planned: class-prior estimation.
 
 ## Contributing
 

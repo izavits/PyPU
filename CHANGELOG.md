@@ -15,6 +15,9 @@ the public API may change between minor versions; such changes are always listed
   of the original iFPU experiments, whose saved test scores it reproduces exactly.
 - LightGBM (>= 4.0) is now a dependency. On macOS it needs the OpenMP runtime
   (`brew install libomp`).
+- `pypu.prior`, for estimating the class prior from PU data: `BBEPrior` (Best Bin
+  Estimation) and `ElkanNotoPrior` (Elkan and Noto's `e1`, `e2` and `e3`). Both also estimate
+  the label frequency and the share of positives among the unlabeled samples.
 - `pypu.datasets`, for making PU data from fully labeled binary datasets:
   - Labeling mechanisms, each returning PU labels `s`:
     - `label_scar`: uniform (SCAR).

@@ -53,6 +53,7 @@ src/pypu/
   models/       one module per method, registered in models/__init__.py
   datasets/     PU data from labeled datasets
   metrics/      evaluation with true labels, and estimates from PU labels
+  prior/        class-prior estimation from PU data
   utils/        validation and shared helpers
 tests/          pytest suite; test_model_contract.py runs on every registered model
 ```

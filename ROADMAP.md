@@ -70,6 +70,15 @@ New: Lee and Liu's criterion, and estimates of recall, precision, F1 and ROC AUC
 labels and the class prior (Jain, White and Radivojac, AAAI 2017), usable as scikit-learn
 scorers for model selection without true labels.
 
+## Class-prior estimation (`pypu.prior`, 0.1.0): done
+
+Implemented from the papers (no code to port): `ElkanNotoPrior` (Elkan and Noto, KDD 2008;
+`e1`, `e2`, `e3`) and `BBEPrior` (Best Bin Estimation; Garg et al., NeurIPS 2021). Both use
+out-of-fold scores of a classifier separating labeled from unlabeled samples. On synthetic
+data BBE stays close to the true prior as the classes overlap, while Elkan-Noto's `e1`/`e2`
+overestimate it, as expected. Still to come: the KM estimator (with `PUe`, 0.3.0), and
+possibly TIcE.
+
 ## Porting notes
 
 1. **SAR-KNN selection (resolved).** `pu_data.py` (lines 44-45) averages the distance to the
