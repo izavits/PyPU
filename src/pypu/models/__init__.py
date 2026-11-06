@@ -24,9 +24,10 @@ _MODELS: dict[str, str] = {
     "ElkanNoto": "pypu.models.elkan_noto",
     "NaivePU": "pypu.models.naive",
     "PUBagging": "pypu.models.bagging",
+    "SAREM": "pypu.models.sarem",
 }
 
-__all__ = ["IFPNU", "IFPU", "ElkanNoto", "NaivePU", "PUBagging"]
+__all__ = ["IFPNU", "IFPU", "SAREM", "ElkanNoto", "NaivePU", "PUBagging"]
 
 if TYPE_CHECKING:
     from pypu.models.bagging import PUBagging
@@ -34,6 +35,7 @@ if TYPE_CHECKING:
     from pypu.models.ifpnu import IFPNU
     from pypu.models.ifpu import IFPU
     from pypu.models.naive import NaivePU
+    from pypu.models.sarem import SAREM
 
 
 def __getattr__(name: str):

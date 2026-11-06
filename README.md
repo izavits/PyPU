@@ -189,7 +189,7 @@ flexible classifier (`estimator=`) can help BBE on non-linear data.
 | `ElkanNoto` | Elkan and Noto: a labeled-vs-unlabeled classifier corrected by the label frequency, or retrained on weighted unlabeled samples | on main (0.1.0) |
 | `PUBagging` | Mordelet and Vert: classifiers trained on the labeled positives against bootstrap samples of the unlabeled ones | on main (0.1.0) |
 | `IFPNU` | An anomaly detector picks reliable negatives, then LightGBM with a focal loss that weights positives, reliable negatives and the remaining unlabeled samples | on main (0.1.0) |
-| `SAREM` | EM for labels selected at random (SAR) | planned (0.1.0) |
+| `SAREM` | Bekker et al.: EM that learns the classifier together with the propensity, the probability that a positive gets labeled (SAR) | on main (0.1.0) |
 | `PUHellingerTree`, `PUHellingerForest` | Hellinger-distance decision trees and forests for PU data | planned (0.2.0) |
 | `NNPU`, `LBE`, `PUe`, `ALMPU` | Neural PU methods (optional PyTorch dependency) | planned (0.3.0) |
 
@@ -212,6 +212,16 @@ from pypu.models import IFPNU
 
 clf = IFPNU(prior=0.2, random_state=0).fit(X_train, s_train)
 clf.pnu_labels_  # 1: labeled positive, 0: reliable negative, -1: left unlabeled
+```
+
+`SAREM` needs no prior. It works best when the propensity is restricted to the features
+that drive labeling:
+
+```python
+from pypu.models import SAREM
+
+clf = SAREM(propensity_features=[0, 3]).fit(X_train, s_train)
+clf.predict_propensity(X_test)  # P(labeled | positive, x)
 ```
 
 `ElkanNoto` estimates the label frequency itself, or takes the `prior`. `PUBagging` builds

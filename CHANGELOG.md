@@ -18,6 +18,11 @@ the public API may change between minor versions; such changes are always listed
   LightGBM is trained on the focal-loss objective of the original iFPNU experiments. Its
   defaults are the settings of those experiments, and from the same anomaly scores it
   reproduces the original code exactly.
+- `pypu.models.SAREM`: SAR-EM (Bekker, Robberechts and Davis), which learns a classifier
+  and a propensity model by expectation-maximization when labels are selected at random
+  (SAR). `predict_propensity` estimates the probability that a positive gets labeled, and
+  `propensity_features` restricts it to chosen columns. Ported from the SAR-PU code used in
+  the iFPNU experiments, whose results it reproduces.
 - LightGBM (>= 4.0) is now a dependency. On macOS it needs the OpenMP runtime
   (`brew install libomp`).
 - `pypu.models.ElkanNoto`: the classifier of Elkan and Noto, either a labeled-vs-unlabeled

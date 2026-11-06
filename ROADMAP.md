@@ -155,6 +155,32 @@ trees ran both with linear SVMs.
      as the detector, the original two steps and `IFPNU` give identical PNU labels and test
      scores (`tests/models/data/ifpnu_reference.npz`), also with the default
      `IsolationForest`.
+7. **SAREM (resolved).** `SAREM` ports SAR-PU's `pu_learn_sar_em` (MIT, KU Leuven DTAI), the
+   function the experiments' `SAREM` wrapper called with all features as propensity
+   features. The same sequence of liblinear logistic regressions, clipping, log-likelihood
+   and convergence test is kept.
+   - Against outputs of the original (`tests/models/data/sarem_reference.npz`), PyPU runs
+     the same number of iterations and matches to about 1e-8. The gap comes from the
+     original's first sample weights, computed in float32 because NumPy 1 kept float32 PU
+     labels times a float64 scalar in float32; with those weights the results agree to
+     1e-15. PyPU keeps float64.
+   - Rebuilding the 840 saved runs (`iFPNU/output_SAREM`, 84 configurations × 10 splits)
+     with PyPU only (legacy labels with `random_state=123`, the experiments' splits): in 75
+     configurations the rebuilt scores give exactly the saved ROC AUC; in all of them the
+     largest ROC AUC difference is 9e-4 and the largest score difference 2e-3. The original code
+     regenerates the saved scores exactly, and a single liblinear fit agrees across
+     scikit-learn 1.2 and 1.9 to the last bits (6e-15 in the intercept). On datasets where EM
+     converges slowly (Satellite, Piechart, Pizzacutter, Segment), hundreds of iterations
+     amplify such differences, and EM can stop at a different iteration.
+   - SAR-PU's model without propensity features (`NoFeaturesModel`) divided by the number of
+     samples instead of the sum of the weights, so it estimated `P(s = 1)` instead of the
+     label frequency. The experiments did not use it; PyPU uses the weighted M-step
+     estimate. Even so, EM's estimate of a constant propensity is too high when the classes
+     overlap (on synthetic data, 0.89 for a true 0.4), so the docstring points to
+     `pypu.prior`.
+   - `predict_propensity` and `propensity_features` are new. On synthetic SAR data whose
+     propensity depends on one feature, restricting the propensity to it recovers the true
+     propensity (correlation 0.99); with all features it does not (0.67).
 
 ## Validating ports
 
