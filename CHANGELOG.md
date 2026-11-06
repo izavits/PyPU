@@ -11,6 +11,10 @@ the public API may change between minor versions; such changes are always listed
 
 ### Added
 
+- `pypu.models.IFPU`: LightGBM with a focal-loss PU objective. Its defaults are the settings
+  of the original iFPU experiments, whose saved test scores it reproduces exactly.
+- LightGBM (>= 4.0) is now a dependency. On macOS it needs the OpenMP runtime
+  (`brew install libomp`).
 - `pypu.datasets`, for making PU data from fully labeled binary datasets:
   - Labeling mechanisms, each returning PU labels `s`:
     - `label_scar`: uniform (SCAR).

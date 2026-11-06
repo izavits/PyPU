@@ -77,9 +77,20 @@ scorers for model selection without true labels.
    in row order rather than the k nearest. It also builds the full n×n distance matrix. The
    copy in `pos_noisyneg/utils.py` sorts the distances first and is correct. PyPU uses real
    nearest neighbours; `legacy=True` reproduces the old labels.
-2. **iFPU objective.** The non-negativity clip in `PUFLLossNonNegative` is commented out
-   (`fpu_xgb.py` lines 48-49), so it computes the unbiased risk. The library default must
-   match what the iFPU paper used.
+2. **iFPU (resolved).** `IFPU` ports `PUFLLossNonNegative` as run in the experiments.
+   - The commented-out clip (`fpu_xgb.py` lines 48-49) acts on `(1 - pi) * grad_n`, which is
+     never positive, so enabling it would zero the negative-class term of every unlabeled
+     sample. It is not an nnPU correction and is not ported. Unlabeled samples get
+     `pi * l+ + (1 - pi) * l-`: soft positives with probability `pi`.
+   - `main.py` passes `num_boost_round=10` next to `n_estimators=100`; LightGBM treats it as
+     an alias and builds 10 trees. The saved results therefore use 10 trees, and so does
+     `IFPU` by default.
+   - PyPU (`label_scar`/`label_sar_knn` with `legacy=True` and `random_state=123`, the split
+     of `CSVDataset.get_splits`, then `IFPU`) reproduces every saved `scores_*.npz` in
+     `iFPNU/output/*_iFPU_lgb` exactly. `tests/models/data/ifpu_reference.npz` holds outputs
+     of the original code on synthetic data for the test suite.
+   - TODO: add the iFPU paper's reference to the `IFPU` docstring and the README once
+     available.
 3. **Hellinger trees.** The Cython code is a fork of scikit-learn ~0.24 tree internals: it
    imports `numpy.math` (removed in NumPy 2) and private scikit-learn modules, and only builds
    under Python 3.8. It will be rewritten in NumPy (the split criterion is short) and checked
@@ -106,5 +117,7 @@ PyPU version reproduces them (within a tolerance, documented when they differ on
   `pyproject.toml`.
 - License: BSD-3-Clause.
 - Python 3.11 and newer.
-- Core dependencies stay small (numpy, scipy, scikit-learn; lightgbm when `IFPU` lands).
+- Core dependencies stay small: numpy, scipy, scikit-learn and lightgbm (since `IFPU`).
+  LightGBM's macOS wheels need Homebrew's `libomp`; models are imported lazily, so this only
+  affects the LightGBM-based models.
   PyTorch, XGBoost and PyOD are optional extras.

@@ -31,13 +31,20 @@ PU_EXPECTED_FAILED_CHECKS = {
 }
 
 
+# Parameters set on top of the defaults. Models that need the class prior get the prior of the
+# pu_data fixture.
+MODEL_PARAMS = {"IFPU": {"prior": 0.3}}
+
+
 def make_model(name):
-    model = getattr(pypu.models, name)()
+    model = getattr(pypu.models, name)(**MODEL_PARAMS.get(name, {}))
     if "random_state" in model.get_params():
         model.set_params(random_state=0)
     return model
 
 
+# The checks fit on their own data, where the fixed prior is often below the labeled fraction.
+@pytest.mark.filterwarnings("ignore:prior=.* is lower than the fraction of labeled:UserWarning")
 @parametrize_with_checks(
     [make_model(name) for name in MODEL_NAMES],
     expected_failed_checks=lambda estimator: PU_EXPECTED_FAILED_CHECKS,

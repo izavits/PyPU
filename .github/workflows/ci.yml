@@ -44,6 +44,9 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install OpenMP (LightGBM's macOS wheels do not bundle it)
+        if: runner.os == 'macOS'
+        run: brew install libomp
       - name: Install
         run: |
           python -m pip install --upgrade pip
@@ -72,4 +75,4 @@ jobs:
       - name: Install the wheel and import it
         run: |
           python -m pip install dist/*.whl
-          cd /tmp && python -c "import pypu, pypu.models; print(pypu.__version__)"
+          cd /tmp && python -c "import pypu; from pypu.models import IFPU, NaivePU; print(pypu.__version__)"

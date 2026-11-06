@@ -19,12 +19,14 @@ from typing import TYPE_CHECKING
 # Public model name -> module that defines it. Register every new model here, in __all__ and
 # in the TYPE_CHECKING block below (tests check that the three agree).
 _MODELS: dict[str, str] = {
+    "IFPU": "pypu.models.ifpu",
     "NaivePU": "pypu.models.naive",
 }
 
-__all__ = ["NaivePU"]
+__all__ = ["IFPU", "NaivePU"]
 
 if TYPE_CHECKING:
+    from pypu.models.ifpu import IFPU
     from pypu.models.naive import NaivePU
 
 

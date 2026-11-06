@@ -28,6 +28,9 @@ pip install pypu-learn
 The package is imported as `pypu` and needs Python 3.11 or newer. (The PyPI name `pypu`
 belongs to an unrelated project, hence `pypu-learn`.)
 
+On macOS, the LightGBM-based models need the OpenMP runtime, which LightGBM's wheels do not
+include: `brew install libomp`.
+
 To try features that are not released yet, install from GitHub:
 
 ```bash
@@ -156,12 +159,22 @@ Models that need the class prior π = P(y = 1) take it as a `prior` parameter.
 | Model | Description | Status |
 | --- | --- | --- |
 | `NaivePU` | Treats unlabeled samples as negatives; the usual lower bound | available |
-| `IFPU` | Focal-loss PU risk with gradient boosting | planned (0.1.0) |
+| `IFPU` | LightGBM with a focal-loss objective that treats unlabeled samples as positive with probability `prior` | on main (0.1.0) |
 | `IFPNU` | Anomaly detector picks reliable negatives, then a focal PNU risk with gradient boosting | planned (0.1.0) |
 | `SAREM` | EM for labels selected at random (SAR) | planned (0.1.0) |
 | `ElkanNoto`, `PUBagging` | Classic PU baselines | planned (0.1.0) |
 | `PUHellingerTree`, `PUHellingerForest` | Hellinger-distance decision trees and forests for PU data | planned (0.2.0) |
 | `NNPU`, `LBE`, `PUe`, `ALMPU` | Neural PU methods (optional PyTorch dependency) | planned (0.3.0) |
+
+"On main" models are not released yet; install from GitHub to try them. `IFPU`'s defaults
+are the settings of the original iFPU experiments (10 trees, learning rate 0.1, focal
+`gamma=3`), and it reproduces their test scores exactly:
+
+```python
+from pypu.models import IFPU
+
+clf = IFPU(prior=0.2).fit(X_train, s_train)  # prior: fraction of positives in the training data
+```
 
 Also planned: class-prior estimation.
 
