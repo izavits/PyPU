@@ -1,0 +1,135 @@
+[build-system]
+requires = ["hatchling>=1.27", "hatch-vcs>=0.4"]
+build-backend = "hatchling.build"
+
+[project]
+# The distribution name on PyPI. `pypu` is taken (abandoned since 2014); the import name is `pypu`.
+name = "pypu-learn"
+dynamic = ["version"]
+description = "Positive-unlabeled (PU) learning in Python, with a scikit-learn style API."
+readme = "README.md"
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+authors = [{ name = "Ilias Zavitsanos" }]
+keywords = [
+    "pu-learning",
+    "positive-unlabeled",
+    "semi-supervised",
+    "weak-supervision",
+    "machine-learning",
+    "scikit-learn",
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "scikit-learn>=1.6",
+]
+
+[project.urls]
+Homepage = "https://github.com/izavits/PyPU"
+Repository = "https://github.com/izavits/PyPU"
+Issues = "https://github.com/izavits/PyPU/issues"
+Changelog = "https://github.com/izavits/PyPU/blob/main/CHANGELOG.md"
+
+[dependency-groups]
+test = [
+    "pytest>=8",
+    "pytest-cov>=5",
+    "pandas>=2",  # DataFrame input tests
+]
+dev = [
+    { include-group = "test" },
+    "ruff>=0.17",
+    "pre-commit>=4",
+    "build>=1.2",
+    "twine>=6",
+]
+
+# ---------------------------------------------------------------- build
+
+[tool.hatch.version]
+source = "vcs"
+# Used when building outside a git checkout or before the first commit/tag.
+fallback-version = "0.0.0"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/pypu/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pypu"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/pypu",
+    "tests",
+    "README.md",
+    "CHANGELOG.md",
+    "CITATION.cff",
+    "LICENSE",
+]
+
+# ---------------------------------------------------------------- tests
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
+xfail_strict = true
+
+[tool.coverage.run]
+source = ["pypu"]
+branch = true
+omit = ["*/_version.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "@abstractmethod",
+]
+
+# ---------------------------------------------------------------- lint
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "SIM", # flake8-simplify
+    "NPY", # numpy-specific rules
+    "RUF", # ruff-specific rules
+    "D",   # pydocstyle (numpy convention)
+]
+ignore = [
+    "D105", # magic methods need no docstring
+    "D107", # parameters are documented in the class docstring (scikit-learn style)
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D"]
