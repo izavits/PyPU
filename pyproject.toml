@@ -9,7 +9,7 @@ dynamic = ["version"]
 description = "Positive-unlabeled (PU) learning in Python, with a scikit-learn style API."
 readme = "README.md"
 license = "BSD-3-Clause"
-license-files = ["LICENSE"]
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
 requires-python = ">=3.11"
 authors = [{ name = "Ilias Zavitsanos" }]
 keywords = [
@@ -81,6 +81,7 @@ include = [
     "CHANGELOG.md",
     "CITATION.cff",
     "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
 ]
 
 # ---------------------------------------------------------------- tests

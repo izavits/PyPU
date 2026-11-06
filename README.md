@@ -186,9 +186,10 @@ flexible classifier (`estimator=`) can help BBE on non-linear data.
 | --- | --- | --- |
 | `NaivePU` | Treats unlabeled samples as negatives; the usual lower bound | available |
 | `IFPU` | LightGBM with a focal-loss objective that treats unlabeled samples as positive with probability `prior` | on main (0.1.0) |
+| `ElkanNoto` | Elkan and Noto: a labeled-vs-unlabeled classifier corrected by the label frequency, or retrained on weighted unlabeled samples | on main (0.1.0) |
+| `PUBagging` | Mordelet and Vert: classifiers trained on the labeled positives against bootstrap samples of the unlabeled ones | on main (0.1.0) |
 | `IFPNU` | Anomaly detector picks reliable negatives, then a focal PNU risk with gradient boosting | planned (0.1.0) |
 | `SAREM` | EM for labels selected at random (SAR) | planned (0.1.0) |
-| `ElkanNoto`, `PUBagging` | Classic PU baselines | planned (0.1.0) |
 | `PUHellingerTree`, `PUHellingerForest` | Hellinger-distance decision trees and forests for PU data | planned (0.2.0) |
 | `NNPU`, `LBE`, `PUe`, `ALMPU` | Neural PU methods (optional PyTorch dependency) | planned (0.3.0) |
 
@@ -200,6 +201,20 @@ are the settings of the original iFPU experiments (10 trees, learning rate 0.1, 
 from pypu.models import IFPU
 
 clf = IFPU(prior=0.2).fit(X_train, s_train)  # prior: fraction of positives in the training data
+```
+
+`ElkanNoto` estimates the label frequency itself, or takes the `prior`. `PUBagging` builds
+the same bags as the `BaggingPuClassifier` of earlier experiments, and its out-of-bag
+probabilities score the unlabeled training samples:
+
+```python
+from sklearn.svm import SVC
+
+from pypu.models import ElkanNoto, PUBagging
+
+clf = ElkanNoto(weighted=True).fit(X_train, s_train)
+bagging = PUBagging(SVC(kernel="linear"), oob_proba=True).fit(X_train, s_train)
+unlabeled_scores = bagging.oob_proba_[s_train == 0, 1]
 ```
 
 ## Contributing

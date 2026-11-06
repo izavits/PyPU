@@ -83,16 +83,24 @@ class BasePriorEstimator(BaseEstimator, metaclass=ABCMeta):
     def _out_of_fold_scores(self, X, s):
         """Out-of-fold estimates of P(s = 1 | x) for every sample."""
         estimator = LogisticRegression() if self.estimator is None else clone(self.estimator)
-        if not hasattr(estimator, "predict_proba"):
-            raise TypeError(
-                f"estimator must implement predict_proba; {type(estimator).__name__} does not."
-            )
-        cv = self.cv
-        if isinstance(cv, numbers.Integral) and not isinstance(cv, bool):
-            cv = StratifiedKFold(n_splits=cv, shuffle=True, random_state=self.random_state)
-        # Columns follow the sorted classes [0, 1].
-        return cross_val_predict(estimator, X, s, cv=cv, method="predict_proba")[:, 1]
+        return out_of_fold_scores(estimator, X, s, cv=self.cv, random_state=self.random_state)
 
     @abstractmethod
     def _estimate_pollution(self, scores, s) -> float:
         """Estimate the fraction of positives among the unlabeled samples."""
+
+
+def out_of_fold_scores(estimator, X, s, *, cv, random_state):
+    """Return out-of-fold estimates of P(s = 1 | x) for every sample.
+
+    ``estimator`` is cloned for each fold. An int ``cv`` is the number of shuffled, stratified
+    folds, seeded by ``random_state``.
+    """
+    if not hasattr(estimator, "predict_proba"):
+        raise TypeError(
+            f"estimator must implement predict_proba; {type(estimator).__name__} does not."
+        )
+    if isinstance(cv, numbers.Integral) and not isinstance(cv, bool):
+        cv = StratifiedKFold(n_splits=cv, shuffle=True, random_state=random_state)
+    # Columns follow the sorted classes [0, 1].
+    return cross_val_predict(estimator, X, s, cv=cv, method="predict_proba")[:, 1]

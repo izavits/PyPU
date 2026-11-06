@@ -9,7 +9,7 @@ file tracks what is planned, where the code comes from, and what to watch for wh
 | Version | Contents |
 | --- | --- |
 | 0.0.x | Scaffold: packaging, base class, `NaivePU`, CI, release workflow, project documents. Trial release to TestPyPI. |
-| 0.1.0 | `pypu.datasets` (PU data from labeled datasets), `pypu.metrics`, class-prior estimation (Elkan–Noto), `IFPU`, `IFPNU`, `SAREM`, `ElkanNoto`, `PUBagging`. |
+| 0.1.0 | `pypu.datasets` (PU data from labeled datasets), `pypu.metrics`, class-prior estimation (Elkan–Noto, BBE), `IFPU`, `IFPNU`, `SAREM`, `ElkanNoto`, `PUBagging`. |
 | 0.2.0 | `PUHellingerTree` and `PUHellingerForest`, rewritten in NumPy. |
 | 0.3.0 | Optional PyTorch extra: `NNPU`/`UPU` networks, `LBE`, `PUe` (with the KM prior estimator), `ALMPU`. |
 | Later | `SpyEM`, `RankPruning`, loaders for the benchmark datasets, a documentation site, a benchmark table comparing all methods. |
@@ -78,6 +78,30 @@ out-of-fold scores of a classifier separating labeled from unlabeled samples. On
 data BBE stays close to the true prior as the classes overlap, while Elkan-Noto's `e1`/`e2`
 overestimate it, as expected. Still to come: the KM estimator (with `PUe`, 0.3.0), and
 possibly TIcE.
+
+## Classic baselines (`ElkanNoto`, `PUBagging`, 0.1.0): done
+
+Neither was used by the current experiment scripts; the older `expsetup.py` of the Hellinger
+trees ran both with linear SVMs.
+
+- `ElkanNoto` is implemented from the paper, not ported. The copy in `pos_noisyneg/` (from
+  pulearn) estimated `c` on a single hold-out split drawn from the global NumPy RNG; PyPU uses
+  out-of-fold scores, as `ElkanNotoPrior` does, or `c = P(s=1) / prior` when `prior` is
+  given. Its `WeightedElkanotoPuClassifier` was not the paper's weighted method: it scaled
+  `g(x)` by an estimate of `P(y=1)` computed on the samples being predicted, so a sample's
+  score depended on the rest of the batch, and the ranking was that of `g(x)`. PyPU's
+  `weighted=True` trains a classifier on weighted copies of the unlabeled samples.
+- `PUBagging` reproduces the bags of `BaggingPuClassifier` (same seeds, the same order of
+  random draws, sample weights when the classifier accepts them). Against outputs of the
+  original under scikit-learn 1.0 (`tests/models/data/bagging_reference.npz`), the
+  experiments' setting (linear SVMs, balanced bags), shallow trees and k-NN match exactly.
+  Fully grown trees and logistic regression differ slightly because scikit-learn changed
+  those models since, not the bags. The original's out-of-bag estimates redrew the bags
+  without first setting the classifier's `random_state`, so for classifiers that have one
+  they came from other bags than the training ones; PyPU's `oob_proba_` uses the actual bags.
+- Defaults: `n_estimators=100` and bags as large as the labeled set (the experiments'
+  setting) instead of the original 10 bags of all unlabeled samples; decision trees as the
+  base classifier, as in the original.
 
 ## Porting notes
 

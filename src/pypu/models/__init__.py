@@ -20,12 +20,16 @@ from typing import TYPE_CHECKING
 # in the TYPE_CHECKING block below (tests check that the three agree).
 _MODELS: dict[str, str] = {
     "IFPU": "pypu.models.ifpu",
+    "ElkanNoto": "pypu.models.elkan_noto",
     "NaivePU": "pypu.models.naive",
+    "PUBagging": "pypu.models.bagging",
 }
 
-__all__ = ["IFPU", "NaivePU"]
+__all__ = ["IFPU", "ElkanNoto", "NaivePU", "PUBagging"]
 
 if TYPE_CHECKING:
+    from pypu.models.bagging import PUBagging
+    from pypu.models.elkan_noto import ElkanNoto
     from pypu.models.ifpu import IFPU
     from pypu.models.naive import NaivePU
 

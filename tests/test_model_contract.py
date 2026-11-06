@@ -43,8 +43,10 @@ def make_model(name):
     return model
 
 
-# The checks fit on their own data, where the fixed prior is often below the labeled fraction.
+# The checks fit on their own data, where the fixed prior is often below the labeled fraction,
+# and where random labels make ElkanNoto's estimate of the label frequency imply a prior of 1.
 @pytest.mark.filterwarnings("ignore:prior=.* is lower than the fraction of labeled:UserWarning")
+@pytest.mark.filterwarnings("ignore:The estimated label frequency .* is clipped:UserWarning")
 @parametrize_with_checks(
     [make_model(name) for name in MODEL_NAMES],
     expected_failed_checks=lambda estimator: PU_EXPECTED_FAILED_CHECKS,

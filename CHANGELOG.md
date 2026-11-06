@@ -15,6 +15,14 @@ the public API may change between minor versions; such changes are always listed
   of the original iFPU experiments, whose saved test scores it reproduces exactly.
 - LightGBM (>= 4.0) is now a dependency. On macOS it needs the OpenMP runtime
   (`brew install libomp`).
+- `pypu.models.ElkanNoto`: the classifier of Elkan and Noto, either a labeled-vs-unlabeled
+  classifier divided by the label frequency or (`weighted=True`) a classifier trained on
+  weighted copies of the unlabeled samples. The label frequency is estimated from
+  out-of-fold scores, or derived from `prior`.
+- `pypu.models.PUBagging`: PU bagging (Mordelet and Vert), with any scikit-learn classifier
+  and out-of-bag probabilities for the training samples (`oob_proba=True`). It builds the
+  same bags as the `BaggingPuClassifier` used in earlier experiments.
+- `THIRD_PARTY_NOTICES.md`, listing the code PyPU derives from.
 - `pypu.prior`, for estimating the class prior from PU data: `BBEPrior` (Best Bin
   Estimation) and `ElkanNotoPrior` (Elkan and Noto's `e1`, `e2` and `e3`). Both also estimate
   the label frequency and the share of positives among the unlabeled samples.
