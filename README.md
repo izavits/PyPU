@@ -7,8 +7,9 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/pypu-learn?label=Python)](https://pypi.org/project/pypu-learn/)
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/izavits/PyPU/blob/main/LICENSE)
 
-> **Status: pre-alpha.** The common interface is in place and the methods are being ported.
-> See the [roadmap](https://github.com/izavits/PyPU/blob/main/ROADMAP.md).
+> **Status: alpha.** Six models, PU data generation, evaluation and class-prior estimation
+> are available; the API may still change before 1.0. More methods are planned: see the
+> [roadmap](https://github.com/izavits/PyPU/blob/main/ROADMAP.md).
 
 In PU learning the training data hold some examples labeled positive and many unlabeled
 examples, which are a mix of positives and negatives. No example is labeled negative. This
@@ -45,7 +46,7 @@ from sklearn.datasets import make_classification
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
 
-from pypu.models import NaivePU
+from pypu.models import ElkanNoto
 
 # A fully labeled dataset...
 X, y = make_classification(n_samples=2000, weights=[0.8], random_state=0)
@@ -55,16 +56,15 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_sta
 rng = np.random.default_rng(0)
 s_train = ((y_train == 1) & (rng.random(len(y_train)) < 0.5)).astype(int)
 
-clf = NaivePU(prior=y_train.mean())
+clf = ElkanNoto(random_state=0)
 clf.fit(X_train, s_train)  # s = 1: labeled positive, s = 0: unlabeled
 
-scores = clf.predict_proba(X_test)[:, 1]
+scores = clf.decision_function(X_test)  # higher means more likely positive
 print("ROC AUC:", roc_auc_score(y_test, scores))
+print("Accuracy:", (clf.predict(X_test) == y_test).mean())
 ```
 
 ## PU data from labeled datasets
-
-> New in the unreleased 0.1.0: install from GitHub to try it.
 
 `pypu.datasets` turns a fully labeled binary dataset into PU data, so methods can be compared
 against the true labels. `make_pu_split` does it in one call: a stratified train/test split,
@@ -103,8 +103,6 @@ positives among the unlabeled samples instead, convert it with
 scenario, where the unlabeled set is a separate sample with the population's class prior.
 
 ## Evaluation
-
-> New in the unreleased 0.1.0: install from GitHub to try it.
 
 `pypu.metrics` has two kinds of metrics.
 
@@ -156,8 +154,6 @@ Models that need the class prior π = P(y = 1) take it as a `prior` parameter.
 
 ## Estimating the class prior
 
-> New in the unreleased 0.1.0: install from GitHub to try it.
-
 When the prior is unknown, estimate it from the PU training data with `pypu.prior`, assuming
 SCAR labels:
 
@@ -185,17 +181,16 @@ flexible classifier (`estimator=`) can help BBE on non-linear data.
 | Model | Description | Status |
 | --- | --- | --- |
 | `NaivePU` | Treats unlabeled samples as negatives; the usual lower bound | available |
-| `IFPU` | LightGBM with a focal-loss objective that treats unlabeled samples as positive with probability `prior` | on main (0.1.0) |
-| `ElkanNoto` | Elkan and Noto: a labeled-vs-unlabeled classifier corrected by the label frequency, or retrained on weighted unlabeled samples | on main (0.1.0) |
-| `PUBagging` | Mordelet and Vert: classifiers trained on the labeled positives against bootstrap samples of the unlabeled ones | on main (0.1.0) |
-| `IFPNU` | An anomaly detector picks reliable negatives, then LightGBM with a focal loss that weights positives, reliable negatives and the remaining unlabeled samples | on main (0.1.0) |
-| `SAREM` | Bekker et al.: EM that learns the classifier together with the propensity, the probability that a positive gets labeled (SAR) | on main (0.1.0) |
+| `IFPU` | LightGBM with a focal-loss objective that treats unlabeled samples as positive with probability `prior` | available |
+| `IFPNU` | An anomaly detector picks reliable negatives, then LightGBM with a focal loss that weights positives, reliable negatives and the remaining unlabeled samples | available |
+| `SAREM` | Bekker et al.: EM that learns the classifier together with the propensity, the probability that a positive gets labeled (SAR) | available |
+| `ElkanNoto` | Elkan and Noto: a labeled-vs-unlabeled classifier corrected by the label frequency, or retrained on weighted unlabeled samples | available |
+| `PUBagging` | Mordelet and Vert: classifiers trained on the labeled positives against bootstrap samples of the unlabeled ones | available |
 | `PUHellingerTree`, `PUHellingerForest` | Hellinger-distance decision trees and forests for PU data | planned (0.2.0) |
 | `NNPU`, `LBE`, `PUe`, `ALMPU` | Neural PU methods (optional PyTorch dependency) | planned (0.3.0) |
 
-"On main" models are not released yet; install from GitHub to try them. `IFPU`'s defaults
-are the settings of the original iFPU experiments (10 trees, learning rate 0.1, focal
-`gamma=3`), and it reproduces their test scores exactly:
+`IFPU`'s defaults are the settings of the original iFPU experiments (10 trees, learning rate
+0.1, focal `gamma=3`), and it reproduces their test scores exactly:
 
 ```python
 from pypu.models import IFPU

@@ -9,30 +9,34 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-06
+
+The first release with PU learning methods: five new models, four of them ported from research
+code and checked against outputs of the originals, plus PU data from labeled datasets,
+evaluation metrics (including estimates from PU labels alone) and class-prior estimation.
+
 ### Added
 
-- `pypu.models.IFPU`: LightGBM with a focal-loss PU objective. Its defaults are the settings
-  of the original iFPU experiments, whose saved test scores it reproduces exactly.
-- `pypu.models.IFPNU`: an anomaly detector (scikit-learn's `IsolationForest` by default, or
-  any PyOD detector) marks the least anomalous unlabeled samples as reliable negatives, then
-  LightGBM is trained on the focal-loss objective of the original iFPNU experiments. Its
-  defaults are the settings of those experiments, and from the same anomaly scores it
-  reproduces the original code exactly.
-- `pypu.models.SAREM`: SAR-EM (Bekker, Robberechts and Davis), which learns a classifier
-  and a propensity model by expectation-maximization when labels are selected at random
-  (SAR). `predict_propensity` estimates the probability that a positive gets labeled, and
-  `propensity_features` restricts it to chosen columns. Ported from the SAR-PU code used in
-  the iFPNU experiments, whose results it reproduces.
-- LightGBM (>= 4.0) is now a dependency. On macOS it needs the OpenMP runtime
-  (`brew install libomp`).
-- `pypu.models.ElkanNoto`: the classifier of Elkan and Noto, either a labeled-vs-unlabeled
-  classifier divided by the label frequency or (`weighted=True`) a classifier trained on
-  weighted copies of the unlabeled samples. The label frequency is estimated from
-  out-of-fold scores, or derived from `prior`.
-- `pypu.models.PUBagging`: PU bagging (Mordelet and Vert), with any scikit-learn classifier
-  and out-of-bag probabilities for the training samples (`oob_proba=True`). It builds the
-  same bags as the `BaggingPuClassifier` used in earlier experiments.
-- `THIRD_PARTY_NOTICES.md`, listing the code PyPU derives from.
+- Models:
+  - `pypu.models.IFPU`: LightGBM with a focal-loss PU objective. Its defaults are the
+    settings of the original iFPU experiments, whose saved test scores it reproduces exactly.
+  - `pypu.models.IFPNU`: an anomaly detector (scikit-learn's `IsolationForest` by default, or
+    any PyOD detector) marks the least anomalous unlabeled samples as reliable negatives,
+    then LightGBM is trained on the focal-loss objective of the original iFPNU experiments.
+    Its defaults are the settings of those experiments, and from the same anomaly scores it
+    reproduces the original code exactly.
+  - `pypu.models.SAREM`: SAR-EM (Bekker, Robberechts and Davis), which learns a classifier
+    and a propensity model by expectation-maximization when labels are selected at random
+    (SAR). `predict_propensity` estimates the probability that a positive gets labeled, and
+    `propensity_features` restricts it to chosen columns. Ported from the SAR-PU code used
+    in the iFPNU experiments, whose results it reproduces.
+  - `pypu.models.ElkanNoto`: the classifier of Elkan and Noto, either a labeled-vs-unlabeled
+    classifier divided by the label frequency or (`weighted=True`) a classifier trained on
+    weighted copies of the unlabeled samples. The label frequency is estimated from
+    out-of-fold scores, or derived from `prior`.
+  - `pypu.models.PUBagging`: PU bagging (Mordelet and Vert), with any scikit-learn
+    classifier and out-of-bag probabilities for the training samples (`oob_proba=True`). It
+    builds the same bags as the `BaggingPuClassifier` used in earlier experiments.
 - `pypu.prior`, for estimating the class prior from PU data: `BBEPrior` (Best Bin
   Estimation) and `ElkanNotoPrior` (Elkan and Noto's `e1`, `e2` and `e3`). Both also estimate
   the label frequency and the share of positives among the unlabeled samples.
@@ -59,7 +63,14 @@ the public API may change between minor versions; such changes are always listed
     `pu_precision_score`, `pu_f1_score` and `pu_roc_auc_score`, which estimate the usual
     metrics given the class prior. All work with `sklearn.metrics.make_scorer`.
 - `pypu.utils.check_true_labels`.
+- `THIRD_PARTY_NOTICES.md`, listing the code PyPU derives from, shipped with the wheel and
+  the sdist.
 - The docstring examples run as part of the test suite.
+
+### Changed
+
+- LightGBM (>= 4.0) is now a dependency. On macOS it needs the OpenMP runtime
+  (`brew install libomp`).
 
 ## [0.0.1] - 2026-11-06
 
@@ -74,5 +85,6 @@ the public API may change between minor versions; such changes are always listed
 - `pypu.utils.check_pu_labels`, `pypu.utils.check_prior`, `pypu.utils.threshold_from_prior`
   and `pypu.show_versions()`.
 
-[Unreleased]: https://github.com/izavits/PyPU/compare/v0.0.1...HEAD
+[Unreleased]: https://github.com/izavits/PyPU/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/izavits/PyPU/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/izavits/PyPU/releases/tag/v0.0.1
