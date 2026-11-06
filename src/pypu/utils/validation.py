@@ -1,4 +1,4 @@
-"""Validation of PU labels and class priors."""
+"""Validation of labels, PU labels and class priors."""
 
 from __future__ import annotations
 
@@ -10,6 +10,41 @@ from sklearn.utils.multiclass import type_of_target
 from sklearn.utils.validation import column_or_1d
 
 _PU_LABELS_HINT = "PU labels must be 1 (labeled positive) or 0 (unlabeled)"
+
+
+def check_true_labels(y, *, input_name: str = "y") -> np.ndarray:
+    """Validate fully observed binary labels, with both classes present.
+
+    Parameters
+    ----------
+    y : array-like of shape (n_samples,)
+        True labels: 1 for positive, 0 for negative. Booleans are accepted.
+    input_name : str, default="y"
+        Name of the argument, used in error messages.
+
+    Returns
+    -------
+    y : ndarray of shape (n_samples,), dtype int64
+        The validated labels.
+
+    Raises
+    ------
+    ValueError
+        If the labels are not 0/1, or if one of the classes is missing.
+    """
+    y = column_or_1d(y, warn=True)
+    if y.size == 0:
+        raise ValueError(f"{input_name} is empty.")
+    values = np.unique(y)
+    if y.dtype.kind not in "biuf" or not np.isin(values, (0, 1)).all():
+        raise ValueError(
+            f"{input_name} must hold the true binary labels: 1 for positive, 0 for negative, "
+            f"got values {values[:10].tolist()}. Map other encodings (such as -1/1) to 0/1 first."
+        )
+    if values.size < 2:
+        missing = "positive" if values[0] == 0 else "negative"
+        raise ValueError(f"{input_name} has no {missing} sample; both classes are needed.")
+    return y.astype(np.int64)
 
 
 def check_pu_labels(s) -> np.ndarray:

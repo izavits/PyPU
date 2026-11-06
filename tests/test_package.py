@@ -1,3 +1,4 @@
+import importlib
 import subprocess
 import sys
 from pathlib import Path
@@ -41,12 +42,12 @@ def test_models_are_imported_lazily():
     assert result.stdout.strip() == "False"
 
 
-def test_datasets_public_functions_are_documented():
-    import pypu.datasets
-
-    for name in pypu.datasets.__all__:
-        obj = getattr(pypu.datasets, name)
-        assert obj.__module__.startswith("pypu.datasets.")
+@pytest.mark.parametrize("module_name", ["pypu.datasets", "pypu.metrics"])
+def test_public_functions_are_documented(module_name):
+    module = importlib.import_module(module_name)
+    for name in module.__all__:
+        obj = getattr(module, name)
+        assert obj.__module__.startswith(f"{module_name}.")
         if name != "PUSplit":
             assert "Examples\n" in obj.__doc__, f"{name} has no Examples section"
 

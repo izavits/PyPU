@@ -58,6 +58,18 @@ New:
 - `make_pu_split`: stratified train/test split with PU labels on the training part only.
 - `pu_summary`: true prior, label frequency and pollution of the unlabeled set.
 
+## Metrics (`pypu.metrics`, 0.1.0): done
+
+Ported from `pu/evaluation.py` and `train_and_validation.py`, and checked against copies of
+the old functions: R-precision and precision/recall at k (ties at the cut-off now count in
+proportion; the old code broke them by `argsort` order), F1 at the prior threshold
+(`average="binary"`, `"macro"` or `None` give `f1_pos`, `f1_macro` and `[f1_neg, f1_pos]`),
+and the best F1 over thresholds.
+
+New: Lee and Liu's criterion, and estimates of recall, precision, F1 and ROC AUC from PU
+labels and the class prior (Jain, White and Radivojac, AAAI 2017), usable as scikit-learn
+scorers for model selection without true labels.
+
 ## Porting notes
 
 1. **SAR-KNN selection (resolved).** `pu_data.py` (lines 44-45) averages the distance to the

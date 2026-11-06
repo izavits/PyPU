@@ -25,6 +25,15 @@ the public API may change between minor versions; such changes are always listed
   - `pu_summary`, `pollution_from_label_frequency` and `label_frequency_from_pollution`.
   - `legacy=True` on `label_scar` and `label_sar_knn` reproduces the labels of the
     `create_pu_data` function used in the iFPU and iFPNU experiments.
+- `pypu.metrics`:
+  - With true labels: `r_precision`, `precision_at_k`, `recall_at_k`, `f1_at_prior` and
+    `max_f1_score`, matching the metrics of the iFPU and iFPNU experiments. Ties at the
+    cut-off of `precision_at_k` and `recall_at_k` count in proportion instead of being
+    broken arbitrarily.
+  - From PU labels alone, for model selection: `lee_liu_score`, and `pu_recall_score`,
+    `pu_precision_score`, `pu_f1_score` and `pu_roc_auc_score`, which estimate the usual
+    metrics given the class prior. All work with `sklearn.metrics.make_scorer`.
+- `pypu.utils.check_true_labels`.
 - The docstring examples run as part of the test suite.
 
 ## [0.0.1] - 2026-11-06

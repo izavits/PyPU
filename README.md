@@ -99,6 +99,44 @@ positives among the unlabeled samples instead, convert it with
 `label_frequency_from_pollution`. `make_case_control` makes data for the case-control
 scenario, where the unlabeled set is a separate sample with the population's class prior.
 
+## Evaluation
+
+> New in the unreleased 0.1.0: install from GitHub to try it.
+
+`pypu.metrics` has two kinds of metrics.
+
+- **With the true labels of a test set:** `r_precision`, `precision_at_k`, `recall_at_k`,
+  `f1_at_prior` (F1 with the top `prior` fraction predicted positive) and `max_f1_score`.
+  They rank the scores, so they suit PU methods whose scores are not calibrated
+  probabilities. scikit-learn's ROC AUC and average precision apply as they are.
+- **From PU labels alone**, for model selection when no true labels exist: `lee_liu_score`
+  needs nothing else, while `pu_recall_score`, `pu_precision_score`, `pu_f1_score` and
+  `pu_roc_auc_score` estimate the usual metrics given the class prior. They assume SCAR
+  labels and work as scikit-learn scorers:
+
+```python
+from sklearn.datasets import make_classification
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import make_scorer
+from sklearn.model_selection import GridSearchCV
+
+from pypu.datasets import make_pu_split
+from pypu.metrics import pu_roc_auc_score, r_precision
+from pypu.models import NaivePU
+
+X, y = make_classification(n_samples=2000, weights=[0.8], random_state=0)
+X_train, X_test, s_train, y_train, y_test = make_pu_split(X, y, label_frequency=0.3, random_state=0)
+prior = y_train.mean()  # in practice, an estimate
+
+search = GridSearchCV(
+    NaivePU(prior=prior),
+    {"estimator": [LogisticRegression(C=C) for C in (0.01, 0.1, 1.0)]},
+    scoring=make_scorer(pu_roc_auc_score, response_method="predict_proba", prior=prior),
+).fit(X_train, s_train)  # only the PU labels are used
+
+print("R-precision:", r_precision(y_test, search.predict_proba(X_test)[:, 1]))
+```
+
 ## The interface
 
 Every model derives from `pypu.base.BasePUClassifier` and is a scikit-learn estimator, so it
@@ -125,7 +163,7 @@ Models that need the class prior π = P(y = 1) take it as a `prior` parameter.
 | `PUHellingerTree`, `PUHellingerForest` | Hellinger-distance decision trees and forests for PU data | planned (0.2.0) |
 | `NNPU`, `LBE`, `PUe`, `ALMPU` | Neural PU methods (optional PyTorch dependency) | planned (0.3.0) |
 
-Also planned: class-prior estimation and PU-specific metrics.
+Also planned: class-prior estimation.
 
 ## Contributing
 

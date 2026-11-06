@@ -52,6 +52,7 @@ src/pypu/
   base.py       BasePUClassifier: the interface every model implements
   models/       one module per method, registered in models/__init__.py
   datasets/     PU data from labeled datasets
+  metrics/      evaluation with true labels, and estimates from PU labels
   utils/        validation and shared helpers
 tests/          pytest suite; test_model_contract.py runs on every registered model
 ```

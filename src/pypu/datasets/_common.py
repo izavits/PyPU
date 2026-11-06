@@ -6,29 +6,17 @@ import math
 import numbers
 
 import numpy as np
-from sklearn.utils.validation import column_or_1d
 
-_TRUE_LABELS_HINT = "y must hold the true binary labels: 1 for positive, 0 for negative"
+from pypu.utils.validation import check_true_labels
 
-
-def check_true_labels(y) -> np.ndarray:
-    """Validate fully observed binary labels and return them as int64.
-
-    Both classes must be present: the generators turn a labeled binary dataset into PU data.
-    """
-    y = column_or_1d(y, warn=True)
-    if y.size == 0:
-        raise ValueError("y is empty.")
-    values = np.unique(y)
-    if y.dtype.kind not in "biuf" or not np.isin(values, (0, 1)).all():
-        raise ValueError(
-            f"{_TRUE_LABELS_HINT}, got values {values[:10].tolist()}. Map other encodings "
-            "(such as -1/1) to 0/1 first."
-        )
-    if values.size < 2:
-        missing = "positive" if values[0] == 0 else "negative"
-        raise ValueError(f"y has no {missing} sample; a labeled binary dataset is needed.")
-    return y.astype(np.int64)
+__all__ = [
+    "check_label_frequency",
+    "check_positive_int",
+    "check_true_labels",
+    "labels_from_indices",
+    "n_labeled_positives",
+    "weighted_choice",
+]
 
 
 def check_label_frequency(label_frequency, *, allow_one: bool = True) -> float:

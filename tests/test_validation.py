@@ -1,7 +1,31 @@
 import numpy as np
 import pytest
 
-from pypu.utils import check_prior, check_pu_labels, threshold_from_prior
+from pypu.utils import check_prior, check_pu_labels, check_true_labels, threshold_from_prior
+
+
+class TestCheckTrueLabels:
+    @pytest.mark.parametrize("y", [[0, 1, 1], np.array([0.0, 1.0, 1.0]), [False, True, True]])
+    def test_valid_labels(self, y):
+        result = check_true_labels(y)
+        assert result.dtype == np.int64
+        np.testing.assert_array_equal(result, [0, 1, 1])
+
+    @pytest.mark.parametrize(
+        "y, match",
+        [
+            ([], "y_true is empty"),
+            ([-1, 1], "y_true must hold the true binary labels"),
+            ([0, 1, 2], "y_true must hold the true binary labels"),
+            (["n", "p"], "y_true must hold the true binary labels"),
+            ([0.0, np.nan, 1.0], "y_true must hold the true binary labels"),
+            ([1, 1], "y_true has no negative"),
+            ([0, 0], "y_true has no positive"),
+        ],
+    )
+    def test_invalid_labels(self, y, match):
+        with pytest.raises(ValueError, match=match):
+            check_true_labels(y, input_name="y_true")
 
 
 class TestCheckPULabels:
