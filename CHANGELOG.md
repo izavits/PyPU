@@ -9,6 +9,8 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+## [0.0.1] - 2026-11-06
+
 ### Added
 
 - Project scaffold: packaging with hatchling and version numbers taken from git tags
@@ -20,4 +22,5 @@ the public API may change between minor versions; such changes are always listed
 - `pypu.utils.check_pu_labels`, `pypu.utils.check_prior`, `pypu.utils.threshold_from_prior`
   and `pypu.show_versions()`.
 
-[Unreleased]: https://github.com/izavits/PyPU/commits/main
+[Unreleased]: https://github.com/izavits/PyPU/compare/v0.0.1...HEAD
+[0.0.1]: https://github.com/izavits/PyPU/releases/tag/v0.0.1

@@ -115,11 +115,13 @@ the sdist and the wheel, publishes them to TestPyPI and then to PyPI, and create
 release whose notes are that changelog section.
 
 Pre-release tags (`vX.Y.ZrcN`, `vX.Y.ZaN`, `vX.Y.ZbN`, `vX.Y.Z.devN`) are published to
-TestPyPI only, so you can try a release without touching PyPI:
+TestPyPI only, so you can try a release without touching PyPI. To install one, take the
+dependencies from PyPI and only PyPU from TestPyPI (anyone can upload to TestPyPI, so do not let
+it supply other packages):
 
 ```bash
-pip install --index-url https://test.pypi.org/simple/ \
-    --extra-index-url https://pypi.org/simple/ "pypu-learn==X.Y.ZrcN"
+pip install numpy scipy scikit-learn
+pip install --no-deps --index-url https://test.pypi.org/simple/ "pypu-learn==X.Y.ZrcN"
 ```
 
 ### One-time publishing setup
