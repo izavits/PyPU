@@ -13,6 +13,11 @@ the public API may change between minor versions; such changes are always listed
 
 - `pypu.models.IFPU`: LightGBM with a focal-loss PU objective. Its defaults are the settings
   of the original iFPU experiments, whose saved test scores it reproduces exactly.
+- `pypu.models.IFPNU`: an anomaly detector (scikit-learn's `IsolationForest` by default, or
+  any PyOD detector) marks the least anomalous unlabeled samples as reliable negatives, then
+  LightGBM is trained on the focal-loss objective of the original iFPNU experiments. Its
+  defaults are the settings of those experiments, and from the same anomaly scores it
+  reproduces the original code exactly.
 - LightGBM (>= 4.0) is now a dependency. On macOS it needs the OpenMP runtime
   (`brew install libomp`).
 - `pypu.models.ElkanNoto`: the classifier of Elkan and Noto, either a labeled-vs-unlabeled

@@ -33,7 +33,7 @@ PU_EXPECTED_FAILED_CHECKS = {
 
 # Parameters set on top of the defaults. Models that need the class prior get the prior of the
 # pu_data fixture.
-MODEL_PARAMS = {"IFPU": {"prior": 0.3}}
+MODEL_PARAMS = {"IFPU": {"prior": 0.3}, "IFPNU": {"prior": 0.3}}
 
 
 def make_model(name):

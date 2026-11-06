@@ -75,4 +75,4 @@ jobs:
       - name: Install the wheel and import it
         run: |
           python -m pip install dist/*.whl
-          cd /tmp && python -c "import pypu; from pypu.models import IFPU, NaivePU; print(pypu.__version__)"
+          cd /tmp && python -c "import pypu, pypu.models; [getattr(pypu.models, m) for m in pypu.models.__all__]; print(pypu.__version__)"

@@ -188,7 +188,7 @@ flexible classifier (`estimator=`) can help BBE on non-linear data.
 | `IFPU` | LightGBM with a focal-loss objective that treats unlabeled samples as positive with probability `prior` | on main (0.1.0) |
 | `ElkanNoto` | Elkan and Noto: a labeled-vs-unlabeled classifier corrected by the label frequency, or retrained on weighted unlabeled samples | on main (0.1.0) |
 | `PUBagging` | Mordelet and Vert: classifiers trained on the labeled positives against bootstrap samples of the unlabeled ones | on main (0.1.0) |
-| `IFPNU` | Anomaly detector picks reliable negatives, then a focal PNU risk with gradient boosting | planned (0.1.0) |
+| `IFPNU` | An anomaly detector picks reliable negatives, then LightGBM with a focal loss that weights positives, reliable negatives and the remaining unlabeled samples | on main (0.1.0) |
 | `SAREM` | EM for labels selected at random (SAR) | planned (0.1.0) |
 | `PUHellingerTree`, `PUHellingerForest` | Hellinger-distance decision trees and forests for PU data | planned (0.2.0) |
 | `NNPU`, `LBE`, `PUe`, `ALMPU` | Neural PU methods (optional PyTorch dependency) | planned (0.3.0) |
@@ -201,6 +201,17 @@ are the settings of the original iFPU experiments (10 trees, learning rate 0.1, 
 from pypu.models import IFPU
 
 clf = IFPU(prior=0.2).fit(X_train, s_train)  # prior: fraction of positives in the training data
+```
+
+`IFPNU`'s defaults are those of the original iFPNU experiments (100 trees), and from the
+same anomaly scores it reproduces the original code exactly. Its first step uses
+scikit-learn's `IsolationForest` unless given another detector, such as any PyOD detector:
+
+```python
+from pypu.models import IFPNU
+
+clf = IFPNU(prior=0.2, random_state=0).fit(X_train, s_train)
+clf.pnu_labels_  # 1: labeled positive, 0: reliable negative, -1: left unlabeled
 ```
 
 `ElkanNoto` estimates the label frequency itself, or takes the `prior`. `PUBagging` builds

@@ -22,7 +22,7 @@ are identical to the copies in `pu_monorepo/iFPNU/`, so the monorepo is the sing
 | Model | Source | Dependencies |
 | --- | --- | --- |
 | `IFPU` | `pu_monorepo/iFPNU/pu/fpu_xgb.py` (`PUFLLossNonNegative`), configured in `main.py` | lightgbm |
-| `IFPNU` | `pu_monorepo/iFPNU/main_2step_ad.py` (reliable negatives) and `pu/fpu_xgb.py` (`nnpnu_focal_loss`) | lightgbm or xgboost, an anomaly detector |
+| `IFPNU` | `pu_monorepo/iFPNU/main_2step_ad.py` (reliable negatives) and `pu/fpu_xgb.py` (`pnu_focal_loss`) | lightgbm, an anomaly detector (scikit-learn's by default, PyOD optional) |
 | `ALMPU` | `pu_monorepo/ALM-PU/tabular.py` | torch, jenkspy |
 | `PUHellingerTree`, `PUHellingerForest` | `pu_monorepo/PU_Hellinger_Trees/pu_tree_simplified/` | none after the rewrite |
 | `SAREM` | `pu_monorepo/iFPNU/models/SAREM.py`, `models/helper_files/sarpu/` | scikit-learn |
@@ -122,7 +122,7 @@ trees ran both with linear SVMs.
      of `CSVDataset.get_splits`, then `IFPU`) reproduces every saved `scores_*.npz` in
      `iFPNU/output/*_iFPU_lgb` exactly. `tests/models/data/ifpu_reference.npz` holds outputs
      of the original code on synthetic data for the test suite.
-   - TODO: add the iFPU paper's reference to the `IFPU` docstring and the README once
+   - TODO: add the iFPU and iFPNU papers' references to the docstrings and the README once
      available.
 3. **Hellinger trees.** The Cython code is a fork of scikit-learn ~0.24 tree internals: it
    imports `numpy.math` (removed in NumPy 2) and private scikit-learn modules, and only builds
@@ -131,11 +131,30 @@ trees ran both with linear SVMs.
 4. **Licensing.** Upstream code under MIT/BSD (PU_Hellinger_Trees, SAR-PU, pulearn,
    rankpruning) can be ported with attribution in `THIRD_PARTY_NOTICES.md`. No license was
    found for the ALM-PU, LBE, PUe, OptIForest and KM-MPE code: check, or reimplement from
-   the papers. `IFPNU` will default to scikit-learn's `IsolationForest` and accept any PyOD
+   the papers. `IFPNU` defaults to scikit-learn's `IsolationForest` and accepts any PyOD
    detector instead of vendoring OptIForest.
 5. **Label conventions.** PyPU uses `s = 1` for labeled positives and `s = 0` for unlabeled.
    ALM-PU uses positive = 0 internally, and iFPNU's PNU step uses -1 for unlabeled; convert
    at the boundary.
+6. **iFPNU (resolved).** `IFPNU` ports the two-step method as run for the saved results in
+   `iFPNU/output_2step/*_iFPNU_lgb` (DIF, EIF and OptIForest as detectors).
+   - First step: the unlabeled samples among the `int(pi * n)` most anomalous training
+     samples (labeled positives count towards that number) stay unlabeled; the other
+     unlabeled samples become reliable negatives.
+   - Second step: `pnu_focal_loss` with LightGBM, 100 rounds. Its non-negative correction
+     applies the unlabeled term only while the mean negative-class focal loss over the
+     unlabeled samples is positive, which it always is, so the objective is a weighted focal
+     loss: positives `pi * l+`, reliable negatives `eta * (1 - pi) * l-`, unlabeled samples
+     `(1 - eta) * l-`. With `eta = 0.5` the first step changes little: across the 840 saved
+     runs common to the three detectors, the median ROC AUC difference between OptIForest and
+     DIF is 0.004.
+   - `nnpnu_focal_loss`, a non-negative PNU risk, was only tried (commented out) and is not
+     ported; decided with the author on 2026-11-06.
+   - The saved runs' detectors were not seeded (DIF uses PyTorch, EIF and OptIForest the
+     global NumPy RNG), so their scores cannot be regenerated. With PyOD's `IForest` seeded
+     as the detector, the original two steps and `IFPNU` give identical PNU labels and test
+     scores (`tests/models/data/ifpnu_reference.npz`), also with the default
+     `IsolationForest`.
 
 ## Validating ports
 

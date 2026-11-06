@@ -15,8 +15,8 @@ try:
     import lightgbm as lgb
 except OSError as exc:  # pragma: no cover - depends on the system libraries
     raise ImportError(
-        "IFPU uses LightGBM, which could not load its OpenMP runtime. On macOS, install it "
-        "with `brew install libomp`."
+        "IFPU and IFPNU use LightGBM, which could not load its OpenMP runtime. On macOS, "
+        "install it with `brew install libomp`."
     ) from exc
 
 # LightGBM aliases of the number of boosting rounds. Any of them in the parameters overrides
@@ -81,7 +81,72 @@ class _FocalPUObjective:
         return grad, np.maximum(hess, 1e-6)
 
 
-class IFPU(BasePUClassifier):
+class _FocalBoostingClassifier(BasePUClassifier):
+    """LightGBM with a custom focal-loss objective; shared by IFPU and IFPNU.
+
+    Subclasses store the LightGBM parameters listed in ``_lgbm_params``, plus ``prior``,
+    ``gamma`` and ``lgbm_params``, and call ``_fit_booster`` with their objective.
+    """
+
+    def _lgbm_params(self) -> dict:
+        name = type(self).__name__
+        extra = {} if self.lgbm_params is None else dict(self.lgbm_params)
+        if "objective" in extra:
+            raise ValueError(f"lgbm_params cannot set the objective; it is {name}'s loss.")
+        rounds = sorted(_N_ESTIMATORS_ALIASES.intersection(extra))
+        if rounds:
+            raise ValueError(
+                f"lgbm_params cannot set the number of rounds ({', '.join(rounds)}); use "
+                "n_estimators."
+            )
+        return {
+            "n_estimators": self.n_estimators,
+            "learning_rate": self.learning_rate,
+            "num_leaves": self.num_leaves,
+            "max_depth": self.max_depth,
+            "min_child_samples": self.min_child_samples,
+            "colsample_bytree": self.colsample_bytree,
+            "reg_lambda": self.reg_lambda,
+            "random_state": self.random_state,
+            "n_jobs": self.n_jobs,
+            "verbosity": -1,
+            # Keep features that cannot be split under min_child_samples (they never are, so
+            # the trees do not change). With a custom objective LightGBM fails when every
+            # feature is filtered out, which happens on very small datasets.
+            "feature_pre_filter": False,
+            **extra,
+        }
+
+    def _check_prior_and_gamma(self, s) -> tuple[float, float]:
+        """Return the validated ``prior`` and ``gamma``."""
+        if self.prior is None:
+            raise ValueError(
+                f"{type(self).__name__} needs the class prior: pass prior=P(y=1), the fraction "
+                "of positives in the training data."
+            )
+        prior = check_prior(self.prior, s)
+        gamma = self.gamma
+        if (
+            isinstance(gamma, bool)
+            or not isinstance(gamma, numbers.Real)
+            or not math.isfinite(gamma)
+            or gamma < 0
+        ):
+            raise ValueError(f"gamma must be a finite number >= 0, got {gamma!r}.")
+        return prior, float(gamma)
+
+    def _fit_booster(self, X, s, objective):
+        model = lgb.LGBMClassifier(objective=objective, **self._lgbm_params())
+        self.booster_ = model.fit(X, s).booster_
+
+    def _decision_function(self, X):
+        return self.booster_.predict(X, raw_score=True)
+
+    def _predict_proba(self, X):
+        return expit(self._decision_function(X))
+
+
+class IFPU(_FocalBoostingClassifier):
     r"""Gradient boosting with a focal-loss objective for PU data.
 
     IFPU trains LightGBM trees on a custom objective built from the focal loss
@@ -184,55 +249,6 @@ class IFPU(BasePUClassifier):
         self.n_jobs = n_jobs
         self.lgbm_params = lgbm_params
 
-    def _lgbm_params(self) -> dict:
-        extra = {} if self.lgbm_params is None else dict(self.lgbm_params)
-        if "objective" in extra:
-            raise ValueError("lgbm_params cannot set the objective; it is IFPU's focal PU loss.")
-        rounds = sorted(_N_ESTIMATORS_ALIASES.intersection(extra))
-        if rounds:
-            raise ValueError(
-                f"lgbm_params cannot set the number of rounds ({', '.join(rounds)}); use "
-                "n_estimators."
-            )
-        return {
-            "n_estimators": self.n_estimators,
-            "learning_rate": self.learning_rate,
-            "num_leaves": self.num_leaves,
-            "max_depth": self.max_depth,
-            "min_child_samples": self.min_child_samples,
-            "colsample_bytree": self.colsample_bytree,
-            "reg_lambda": self.reg_lambda,
-            "random_state": self.random_state,
-            "n_jobs": self.n_jobs,
-            "verbosity": -1,
-            # Keep features that cannot be split under min_child_samples (they never are, so
-            # the trees do not change). With a custom objective LightGBM fails when every
-            # feature is filtered out, which happens on very small datasets.
-            "feature_pre_filter": False,
-            **extra,
-        }
-
     def _fit(self, X, s):
-        if self.prior is None:
-            raise ValueError(
-                "IFPU needs the class prior: pass prior=P(y=1), the fraction of positives in "
-                "the training data."
-            )
-        prior = check_prior(self.prior, s)
-        gamma = self.gamma
-        if (
-            isinstance(gamma, bool)
-            or not isinstance(gamma, numbers.Real)
-            or not math.isfinite(gamma)
-            or gamma < 0
-        ):
-            raise ValueError(f"gamma must be a finite number >= 0, got {gamma!r}.")
-        objective = _FocalPUObjective(gamma=float(gamma), prior=prior)
-        model = lgb.LGBMClassifier(objective=objective, **self._lgbm_params())
-        self.booster_ = model.fit(X, s).booster_
-
-    def _decision_function(self, X):
-        return self.booster_.predict(X, raw_score=True)
-
-    def _predict_proba(self, X):
-        return expit(self._decision_function(X))
+        prior, gamma = self._check_prior_and_gamma(s)
+        self._fit_booster(X, s, _FocalPUObjective(gamma=gamma, prior=prior))
