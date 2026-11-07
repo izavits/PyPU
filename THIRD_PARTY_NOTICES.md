@@ -1,7 +1,18 @@
 # Third-party notices
 
 PyPU is distributed under the BSD 3-Clause License (see `LICENSE`). Parts of it are derived
-from the projects below, whose licenses require this notice.
+from the projects below, credited here with their license texts where they have one.
+
+## Kernel mixture proportion estimation (KM)
+
+- **Used in:** `src/pypu/prior/_km.py` (`KMPrior`, and `PUe` when no prior is given), kept
+  unchanged apart from linting, as modified for the iFPNU experiments.
+- **Source:** http://web.eecs.umich.edu/~cscott/code/kernel_MPE.zip, by Harish G. Ramaswamy,
+  Clayton Scott and Ambuj Tewari, the code of "Mixture Proportion Estimation via Kernel
+  Embedding of Distributions" (ICML 2016).
+- **License:** none is stated with the code.
+- It calls CVXOPT (GPL-3.0), an optional dependency (`pypu-learn[cvxopt]`) that PyPU does
+  not distribute.
 
 ## SAR-PU
 

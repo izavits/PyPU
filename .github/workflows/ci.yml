@@ -79,5 +79,5 @@ jobs:
         run: |
           python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
           WHEEL=$(ls dist/*.whl)
-          python -m pip install "${WHEEL}[xgboost,torch]"
+          python -m pip install "${WHEEL}[xgboost,torch,cvxopt]"
           cd /tmp && python -c "import pypu, pypu.models; [getattr(pypu.models, m) for m in pypu.models.__all__]; print(pypu.__version__)"

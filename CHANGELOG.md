@@ -16,6 +16,16 @@ the public API may change between minor versions; such changes are always listed
   whose settings are its defaults, and gives the original's results to the last bit under
   the same PyTorch. As in that code, the labeling-bias model is fitted as a classifier of
   labeled versus unlabeled samples; the docstring explains how this departs from the paper.
+- `pypu.models.PUe`: PUe (Wang et al.), a logistic classifier trained with normalized
+  inverse propensity weights. It ports the PUe code of the iFPNU experiments, whose settings
+  are its defaults, and reproduces it to the last bit. Those settings train each model for
+  only 20 Adam steps, which barely moves it from its random initial weights; the docstring
+  says so, and longer training is a parameter away.
+- `pypu.prior.KMPrior`: the KM1 and KM2 class-prior estimators of Ramaswamy, Scott and
+  Tewari, using the authors' code as the PUe experiments did, unchanged. `PUe` uses KM1 when
+  no prior is given.
+- The optional extra `pypu-learn[cvxopt]` for the KM estimator. CVXOPT is licensed under the
+  GPL-3.0.
 - The optional extra `pypu-learn[torch]` for the PyTorch-based models. They train on a
   single CPU thread, so their results do not depend on the number of cores. On macOS, PyPU
   loads LightGBM before PyTorch, whose OpenMP runtimes otherwise crash each other.

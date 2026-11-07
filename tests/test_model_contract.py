@@ -43,6 +43,9 @@ MODEL_PARAMS = {
     "ImbalancedNNPUBoost": {"prior": 0.3, "n_estimators": 10},
     # 600 optimizer steps instead of the 11,000 of the defaults, to keep the checks quick.
     "LBE": {"n_iter": 10, "n_m_steps": 40, "n_pretrain_steps": 200},
+    # The experiments' 20 steps barely train PUe (see its docstring); the checks need a
+    # trained model. Its default KM estimate of the prior suits the checks' own data.
+    "PUe": {"n_steps": 2000, "learning_rate": 0.01},
 }
 
 

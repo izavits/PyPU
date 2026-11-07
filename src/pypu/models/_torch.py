@@ -22,7 +22,7 @@ try:
     import torch
 except ImportError as exc:  # pragma: no cover - depends on the installed extras
     raise ImportError(
-        "LBE needs PyTorch: install it with `pip install 'pypu-learn[torch]'` (see "
+        "LBE and PUe need PyTorch: install it with `pip install 'pypu-learn[torch]'` (see "
         "https://pytorch.org for builds with GPU support)."
     ) from exc
 

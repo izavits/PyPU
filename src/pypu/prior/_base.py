@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numbers
 import warnings
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 
 import numpy as np
 from sklearn.base import BaseEstimator, clone
@@ -32,7 +32,8 @@ class BasePriorEstimator(BaseEstimator, metaclass=ABCMeta):
     class prior of that population.
 
     Subclasses implement ``_estimate_pollution(scores, s)``, given out-of-fold scores of a
-    classifier trained to separate labeled from unlabeled samples.
+    classifier trained to separate labeled from unlabeled samples, or override
+    ``_fit_pollution(X, s)`` to estimate the pollution from the features directly.
     """
 
     def __init__(self, estimator=None, cv=5, random_state=None):
@@ -58,8 +59,7 @@ class BasePriorEstimator(BaseEstimator, metaclass=ABCMeta):
         X = validate_data(self, X, reset=True, dtype=[np.float64, np.float32])
         s = check_pu_labels(s)
         check_consistent_length(X, s)
-        scores = self._out_of_fold_scores(X, s)
-        pollution = float(self._estimate_pollution(scores, s))
+        pollution = float(self._fit_pollution(X, s))
 
         n_labeled = int(s.sum())
         n_unlabeled = s.size - n_labeled
@@ -80,14 +80,21 @@ class BasePriorEstimator(BaseEstimator, metaclass=ABCMeta):
         self.label_frequency_ = float(n_labeled / n_positive)
         return self
 
+    def _fit_pollution(self, X, s) -> float:
+        """Estimate the fraction of positives among the unlabeled samples of ``X``.
+
+        By default from out-of-fold scores of a labeled-vs-unlabeled classifier.
+        """
+        return self._estimate_pollution(self._out_of_fold_scores(X, s), s)
+
     def _out_of_fold_scores(self, X, s):
         """Out-of-fold estimates of P(s = 1 | x) for every sample."""
         estimator = LogisticRegression() if self.estimator is None else clone(self.estimator)
         return out_of_fold_scores(estimator, X, s, cv=self.cv, random_state=self.random_state)
 
-    @abstractmethod
-    def _estimate_pollution(self, scores, s) -> float:
-        """Estimate the fraction of positives among the unlabeled samples."""
+    def _estimate_pollution(self, scores, s) -> float:  # pragma: no cover - abstract
+        """Estimate the fraction of positives among the unlabeled samples from the scores."""
+        raise NotImplementedError
 
 
 def out_of_fold_scores(estimator, X, s, *, cv, random_state):

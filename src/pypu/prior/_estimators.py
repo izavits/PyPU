@@ -1,4 +1,4 @@
-"""Class-prior estimators: Elkan-Noto and Best Bin Estimation."""
+"""Class-prior estimators: Elkan-Noto, Best Bin Estimation and kernel mean embedding."""
 
 from __future__ import annotations
 
@@ -203,3 +203,82 @@ class BBEPrior(BasePriorEstimator):
         )
         best = np.argmin((q_u + (1 + gamma) * width) / q_p)
         return q_u[best] / q_p[best]
+
+
+class KMPrior(BasePriorEstimator):
+    r"""Estimate the class prior by kernel mean embedding (KM1 or KM2).
+
+    The unlabeled samples are a mixture of positives and negatives, and the labeled samples
+    are drawn from the positives. KM [1]_ embeds both distributions in a reproducing kernel
+    Hilbert space with a Gaussian kernel, and estimates the largest proportion of the
+    positives' distribution that the unlabeled distribution can contain: the fraction of
+    positives among the unlabeled samples. It finds it by bisection, solving a quadratic
+    program at each step, and stops where the distance between the embeddings starts to grow
+    faster than a threshold; KM1 and KM2 use two different thresholds. The kernel width is
+    the multiple of the median pairwise distance, among five, that best separates the two
+    embeddings.
+
+    Unlike :class:`BBEPrior` and :class:`ElkanNotoPrior`, KM uses no classifier: it works on
+    the features directly, so their scale matters. PyPU uses the original code of the
+    authors, as in the PUe experiments (see :class:`~pypu.models.PUe`), unchanged.
+
+    Parameters
+    ----------
+    method : {"km1", "km2"}, default="km1"
+        Which threshold to use; KM1 is the one used by PUe.
+
+    Attributes
+    ----------
+    prior_ : float
+        Estimated class prior :math:`\pi = P(y = 1)` of the training samples.
+    label_frequency_ : float
+        Estimated label frequency :math:`c = P(s = 1 \mid y = 1)`.
+    pollution_ : float
+        Estimated fraction of positives among the unlabeled samples (the paper's
+        :math:`\kappa^*`). In the case-control scenario it estimates the class prior of the
+        unlabeled population.
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+    feature_names_in_ : ndarray of shape (n_features_in_,)
+        Names of features seen during ``fit``, when ``X`` has string feature names.
+
+    See Also
+    --------
+    BBEPrior : Best Bin Estimation, from the scores of a classifier.
+
+    Notes
+    -----
+    Needs cvxopt (``pip install 'pypu-learn[cvxopt]'``), which is licensed under the GPL-3.0.
+    The kernel matrix covers all samples, so memory grows with the square of their number
+    and each of the roughly 20 quadratic programs with its cube: subsample beyond a few
+    thousand samples. The estimates are multiples of the bisection's resolution in
+    :math:`\lambda = 1 / (1 - \kappa^*)`, so nearby datasets often get exactly the same
+    estimate. There is no randomness.
+
+    References
+    ----------
+    .. [1] H. Ramaswamy, C. Scott and A. Tewari. "Mixture proportion estimation via kernel
+       embedding of distributions." ICML 2016.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import make_classification
+    >>> from pypu.datasets import label_scar
+    >>> from pypu.prior import KMPrior
+    >>> X, y = make_classification(n_samples=600, weights=[0.7], random_state=0)
+    >>> s = label_scar(y, label_frequency=0.4, random_state=0)
+    >>> estimator = KMPrior().fit(X, s)
+    >>> 0 < estimator.pollution_ < 1
+    True
+    """
+
+    def __init__(self, method="km1"):
+        self.method = method
+
+    def _fit_pollution(self, X, s):
+        if self.method not in ("km1", "km2"):
+            raise ValueError(f"method must be 'km1' or 'km2', got {self.method!r}.")
+        from pypu.prior._km import km_default
+
+        km2, km1 = km_default(X[s == 0], X[s == 1])
+        return km1 if self.method == "km1" else km2

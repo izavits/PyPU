@@ -78,8 +78,9 @@ Implemented from the papers (no code to port): `ElkanNotoPrior` (Elkan and Noto,
 `e1`, `e2`, `e3`) and `BBEPrior` (Best Bin Estimation; Garg et al., NeurIPS 2021). Both use
 out-of-fold scores of a classifier separating labeled from unlabeled samples. On synthetic
 data BBE stays close to the true prior as the classes overlap, while Elkan-Noto's `e1`/`e2`
-overestimate it, as expected. Still to come: the KM estimator (with `PUe`, 0.4.0), and
-possibly TIcE.
+overestimate it, as expected. `KMPrior` (KM1 and KM2; Ramaswamy, Scott and Tewari, ICML
+2016) came with `PUe` in 0.4.0, using the authors' code (porting note 10). Possibly later:
+TIcE.
 
 ## Classic baselines (`ElkanNoto`, `PUBagging`, 0.1.0): done
 
@@ -157,11 +158,13 @@ trees ran both with linear SVMs.
    to scikit-learn's `IsolationForest` and accepts any PyOD detector instead of vendoring
    OptIForest. For 0.4.0 the author decided (2026-11-07) to port the implementations in the
    local repositories rather than reimplement the papers. Checked the same day, two of them
-   contain other people's code without a license, to settle before 0.4.0 is released:
+   contain other people's code without a license:
    - `iFPNU/models/helper_files/km.py` (used by `PUe`) is the kernel mixture proportion
      estimation code of Ramaswamy, Scott and Tewari, downloaded from C. Scott's website and
-     lightly modified.
-   - `ALM-PU/` is a modified clone of the authors' repository (github.com/JiazheWei/ALM-PU),
+     lightly modified. The author decided to port it unchanged, credited in
+     `THIRD_PARTY_NOTICES.md`, with its solver CVXOPT (GPL-3.0) as the optional extra
+     `pypu-learn[cvxopt]`, not distributed with PyPU (2026-11-07).
+   - Still to settle before 0.4.0 is released: `ALM-PU/` is a modified clone of the authors' repository (github.com/JiazheWei/ALM-PU),
      which has no license; its EMA model and cosine schedule come from FixMatch-pytorch
      (MIT).
 5. **Label conventions.** PyPU uses `s = 1` for labeled positives and `s = 0` for unlabeled.
@@ -259,6 +262,33 @@ trees ran both with linear SVMs.
      and PyTorch fails when it runs on several threads. `pypu.models._torch` imports
      LightGBM before PyTorch, and the PyTorch models run on one thread, which also makes
      their results independent of the number of cores.
+
+10. **PUe and KM (resolved).** `PUe` ports the experiments' wrapper (`iFPNU/models/PUe.py`),
+    and `KMPrior` the KM code it calls (`models/helper_files/km.py`, by Ramaswamy, Scott and
+    Tewari; see note 4).
+    - As run: the prior is the KM1 estimate combined with the labeled fraction of `s`
+      (computed in float32, as the float32 labels made it); the propensity model and the
+      classifier are logistic regressions trained for 20 full-batch Adam steps each, with
+      learning rate 0.001, from `nn.Linear`'s initial weights after `seed(i)`. Those are the
+      defaults, and `random_state=i` reproduces `seed(i)`.
+    - 20 steps at that learning rate barely move the models: the scores stay close to those
+      of the random initial weights (on synthetic data the ROC AUC ranges from 0.24 to 0.83
+      over seeds; across the saved settings the mean is 0.54). Decided with the author to keep
+      these defaults and document them (2026-11-07); `n_steps=2000, learning_rate=0.01` gives
+      a trained model.
+    - The classifier's loss sums its unlabeled term while the labeled weights sum to one, so
+      unlabeled samples weigh `n_u` times more than in a risk estimate, and the negative term
+      is not clipped. Ported as run, documented.
+    - Against the reference (`tests/models/data/pue_reference.npz`, PyTorch 2.8 and cvxopt
+      1.3.3), the KM estimates, the prior, both models' weights and the test probabilities
+      agree to the last bit, under PyTorch 2.15 too.
+    - `main_PUe.py` seeded each run, so the saved scores (`iFPNU/output_PUe`, 84 settings ×
+      10 runs) can be regenerated with PyPU alone (legacy labels with `random_state=123`, the
+      experiments' splits, `PUe(random_state=i)`). In the 18 settings checked so far (Cardio,
+      Climate, Letter) every score agrees within one float32 rounding unit (6e-8) and every
+      ROC AUC is the same; the other settings are being checked.
+    - KM builds the full kernel matrix and solves about 20 dense quadratic programs of the
+      sample size: about a minute per fit on 3500 training samples, on one core.
 
 ## Validating ports
 

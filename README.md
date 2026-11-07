@@ -7,7 +7,7 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/pypu-learn?label=Python)](https://pypi.org/project/pypu-learn/)
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/izavits/PyPU/blob/main/LICENSE)
 
-> **Status: alpha.** Twelve models, PU data generation, evaluation and class-prior estimation
+> **Status: alpha.** Thirteen models, PU data generation, evaluation and class-prior estimation
 > are available; the API may still change before 1.0. More methods are planned: see the
 > [roadmap](https://github.com/izavits/PyPU/blob/main/ROADMAP.md).
 
@@ -32,13 +32,18 @@ belongs to an unrelated project, hence `pypu-learn`.)
 On macOS, the LightGBM-based models need the OpenMP runtime, which LightGBM's wheels do not
 include: `brew install libomp`.
 
-The XGBoost-based models (`UPUBoost`, `NNPUBoost`, `ImbalancedNNPUBoost`) and the
-PyTorch-based models (`LBE`) need optional extras:
+The XGBoost-based models (`UPUBoost`, `NNPUBoost`, `ImbalancedNNPUBoost`), the
+PyTorch-based models (`LBE`, `PUe`) and the KM estimator of the class prior (`KMPrior`, also
+used by `PUe` when no prior is given) need optional extras:
 
 ```bash
 pip install "pypu-learn[xgboost]"
 pip install "pypu-learn[torch]"
+pip install "pypu-learn[cvxopt]"
 ```
+
+The `cvxopt` extra installs [CVXOPT](https://cvxopt.org), which is licensed under the GPL-3.0;
+PyPU itself stays under the BSD 3-Clause License.
 
 On Linux, PyPI's PyTorch wheels include CUDA; for the smaller CPU build, install PyTorch
 first as described on [pytorch.org](https://pytorch.org). On macOS, PyTorch bundles its own
@@ -184,8 +189,12 @@ clf = IFPU(prior=estimator.prior_).fit(X_train, s_train)
 - `ElkanNotoPrior`: the estimators of Elkan and Noto (KDD 2008), `method="e1"`, `"e2"` or
   `"e3"`. They are accurate when the classes barely overlap and overestimate the prior when
   they overlap more.
+- `KMPrior`: kernel mean embedding (Ramaswamy, Scott and Tewari, ICML 2016), `method="km1"`
+  or `"km2"`, using the authors' code as the PUe experiments did. It works on the features
+  directly, without a classifier, and its cost grows quickly with the number of samples
+  (`pip install "pypu-learn[cvxopt]"`).
 
-Both also estimate the label frequency (`label_frequency_`) and the share of positives among
+All three also estimate the label frequency (`label_frequency_`) and the share of positives among
 the unlabeled samples (`pollution_`). Estimates are biased upwards when the classifier
 cannot isolate a purely positive region, and noisy with few labeled positives; a more
 flexible classifier (`estimator=`) can help BBE on non-linear data.
@@ -205,7 +214,8 @@ flexible classifier (`estimator=`) can help BBE on non-linear data.
 | `UPUBoost` | XGBoost on the unbiased PU risk (uPU) | available (`[xgboost]` extra) |
 | `NNPUBoost`, `ImbalancedNNPUBoost` | XGBoost on the objectives of the original nnPU and imbalanced nnPU experiments (weighted cross-entropies) | available (`[xgboost]` extra) |
 | `LBE` | Gong et al.: EM that learns a logistic classifier together with a logistic model of the labeling bias, as in the original experiments | available (`[torch]` extra) |
-| `PUe`, `ALMPU` | Neural PU methods (optional PyTorch dependency) | planned (0.4.0) |
+| `PUe` | Wang et al.: a logistic classifier trained with normalized inverse propensity weights, as in the original experiments | available (`[torch]` extra) |
+| `ALMPU` | ALM-PU: a neural network trained with an augmented Lagrangian (optional PyTorch dependency) | planned (0.4.0) |
 
 `IFPU`'s defaults are the settings of the original iFPU experiments (10 trees, learning rate
 0.1, focal `gamma=3`), and it reproduces their test scores exactly:
@@ -287,6 +297,18 @@ from pypu.models import LBE
 
 clf = LBE(random_state=0).fit(X_train, s_train)  # random_state=i: torch.manual_seed(i)
 scores = clf.decision_function(X_test)
+```
+
+`PUe` ports the PUe code of the same experiments and gives the original's results to the
+last bit. Its defaults are their settings, including only 20 Adam steps per model, which barely train it:
+its scores stay close to those of its random initial weights. Raise `n_steps` and
+`learning_rate` for a trained model. Without a `prior`, it estimates one with KM1:
+
+```python
+from pypu.models import PUe
+
+as_run = PUe(random_state=0).fit(X_train, s_train)  # KM1 prior, needs the cvxopt extra
+trained = PUe(prior=0.2, n_steps=2000, learning_rate=0.01, random_state=0).fit(X_train, s_train)
 ```
 
 ## Contributing

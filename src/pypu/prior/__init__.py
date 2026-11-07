@@ -11,12 +11,14 @@ from the PU training data and pass the estimate on::
 
 - :class:`BBEPrior`: Best Bin Estimation, robust when the classes overlap.
 - :class:`ElkanNotoPrior`: the classic estimator of Elkan and Noto.
+- :class:`KMPrior`: kernel mean embedding (KM1 and KM2) of Ramaswamy, Scott and Tewari, on
+  the features directly; needs the optional cvxopt.
 
-Both assume SCAR labels and also estimate the label frequency and the share of positives
+All assume SCAR labels and also estimate the label frequency and the share of positives
 among the unlabeled samples.
 """
 
 from pypu.prior._base import BasePriorEstimator
-from pypu.prior._estimators import BBEPrior, ElkanNotoPrior
+from pypu.prior._estimators import BBEPrior, ElkanNotoPrior, KMPrior
 
-__all__ = ["BBEPrior", "BasePriorEstimator", "ElkanNotoPrior"]
+__all__ = ["BBEPrior", "BasePriorEstimator", "ElkanNotoPrior", "KMPrior"]

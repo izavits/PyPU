@@ -43,8 +43,10 @@ dependencies = [
 [project.optional-dependencies]
 # The PU risk boosting models (UPUBoost, NNPUBoost, ImbalancedNNPUBoost).
 xgboost = ["xgboost>=2.0"]
-# The neural models (LBE).
+# The neural models (LBE, PUe).
 torch = ["torch>=2.2"]
+# The KM class-prior estimator (KMPrior, and PUe without a given prior). cvxopt is GPL-3.0.
+cvxopt = ["cvxopt>=1.3"]
 
 [project.urls]
 Homepage = "https://github.com/izavits/PyPU"
@@ -59,6 +61,7 @@ test = [
     "pandas>=2",  # DataFrame input tests
     "xgboost>=2.0",  # the optional XGBoost models
     "torch>=2.2",  # the optional PyTorch models; CI installs the CPU build first
+    "cvxopt>=1.3",  # the optional KM estimator
 ]
 dev = [
     { include-group = "test" },
