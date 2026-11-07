@@ -59,10 +59,11 @@ def check_e_step_and_gradients(reference, case):
     X = torch.from_numpy(reference["X_train"])
     s = torch.from_numpy(reference[f"{case}_s"]).float()
 
+    # Absolute tolerance: float32 sigmoids differ in the last bit or two across platforms,
+    # and 1 - h(x) turns that into a large relative difference when h(x) is close to 1
+    # (8e-4 for one sample on Linux; 1.4e-7 in absolute terms).
     posterior = _e_step(classifier, propensity, X, s)
-    np.testing.assert_allclose(
-        posterior.numpy(), reference[f"{case}_posterior"], rtol=1e-5, atol=1e-7
-    )
+    np.testing.assert_allclose(posterior.numpy(), reference[f"{case}_posterior"], atol=1e-6)
 
     loss = _negative_log_likelihood(classifier(X), propensity(X), s, posterior)
     loss.backward()
