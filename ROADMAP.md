@@ -12,7 +12,7 @@ file tracks what is planned, where the code comes from, and what to watch for wh
 | 0.1.0 (released 2026-11-06) | `pypu.datasets` (PU data from labeled datasets), `pypu.metrics`, class-prior estimation (Elkan–Noto, BBE), `IFPU`, `IFPNU`, `SAREM`, `ElkanNoto`, `PUBagging`. |
 | 0.2.0 (released 2026-11-07) | `PUHellingerTree` and `PUHellingerForest`, rewritten in NumPy. |
 | 0.3.0 (released 2026-11-07) | Optional XGBoost extra: `UPUBoost`, `NNPUBoost`, `ImbalancedNNPUBoost`, the boosting PU risks of the Hellinger trees experiments. |
-| 0.4.0 | Optional PyTorch extra: `NNPU`/`UPU` networks, `LBE`, `PUe` (with the KM prior estimator), `ALMPU`. |
+| 0.4.0 | Optional PyTorch extra: `LBE`, `PUe` (with the KM prior estimator), `ALMPU`. uPU and nnPU are covered by the boosting models of 0.3.0, so no network versions are planned. |
 | Later | `SpyEM`, `RankPruning`, loaders for the benchmark datasets, a documentation site, a benchmark table comparing all methods. |
 
 ## Methods and their sources
@@ -31,7 +31,7 @@ are identical to the copies in `pu_monorepo/iFPNU/`, so the monorepo is the sing
 | `LBE` | `pu_monorepo/iFPNU/models/LBE.py`, `models/helper_files/lbe/` | torch |
 | `PUe` | `pu_monorepo/iFPNU/models/PUe.py`, `models/helper_files/km.py` | torch, cvxopt |
 | `ElkanNoto`, `PUBagging`, `SpyEM`, `RankPruning` | `pu_monorepo/PU_Hellinger_Trees/pos_noisyneg/` | scikit-learn (SpyEM: pomegranate) |
-| Focal nnPU losses | `pu_monorepo/iFPNU/pu/losses.py` | torch |
+| Focal nnPU losses (not planned: network nnPU dropped) | `pu_monorepo/iFPNU/pu/losses.py` | torch |
 
 ## Data utilities (`pypu.datasets`, 0.1.0): done
 
