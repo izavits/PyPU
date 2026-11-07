@@ -3,6 +3,49 @@
 PyPU is distributed under the BSD 3-Clause License (see `LICENSE`). Parts of it are derived
 from the projects below, credited here with their license texts where they have one.
 
+## ALM-PU
+
+- **Used in:** `src/pypu/models/almpu.py` (`ALMPU`), ported from the PyPU author's tabular
+  benchmark of ALM-PU, which adapts the authors' code: the network architecture, the
+  augmented-Lagrangian penalty and multiplier updates, the trend of the predictions, the
+  Jenks pseudo-labels and the schedule of the second phase's targets.
+- **Source:** https://github.com/JiazheWei/ALM-PU, by Jiazhe Wei and colleagues, the code of
+  "ALM-PU: positive and unlabeled learning with constrained optimization" (Machine Learning,
+  2025).
+- **License:** none is stated with the code.
+
+## FixMatch-pytorch
+
+- **Used in:** `src/pypu/models/almpu.py`: the exponential moving average of the model and
+  the cosine learning-rate schedule, which ALM-PU's code took from FixMatch-pytorch.
+- **Source:** FixMatch-pytorch, https://github.com/kekmodel/FixMatch-pytorch, by Jungdae Kim
+  and Qing Yu.
+- **License:** MIT.
+
+```
+MIT License
+
+Copyright (c) 2019 Jungdae Kim, Qing Yu
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ## Kernel mixture proportion estimation (KM)
 
 - **Used in:** `src/pypu/prior/_km.py` (`KMPrior`, and `PUe` when no prior is given), kept

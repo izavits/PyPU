@@ -22,7 +22,7 @@ try:
     import torch
 except ImportError as exc:  # pragma: no cover - depends on the installed extras
     raise ImportError(
-        "LBE and PUe need PyTorch: install it with `pip install 'pypu-learn[torch]'` (see "
+        "LBE, PUe and ALMPU need PyTorch: install it with `pip install 'pypu-learn[torch]'` (see "
         "https://pytorch.org for builds with GPU support)."
     ) from exc
 
@@ -44,18 +44,21 @@ def single_thread():
         torch.set_num_threads(n_threads)
 
 
-def make_generator(random_state) -> torch.Generator:
-    """Return a CPU generator seeded from ``random_state``.
+def torch_seed(random_state) -> int:
+    """Return the PyTorch seed for ``random_state``.
 
     An int is used as the seed itself, so ``random_state=i`` gives the same numbers as
     ``torch.manual_seed(i)`` did in the original code. ``None`` and ``RandomState`` instances
     draw the seed from NumPy.
     """
     if isinstance(random_state, numbers.Integral) and not isinstance(random_state, bool):
-        seed = int(random_state)
-    else:
-        seed = int(check_random_state(random_state).randint(_MAX_SEED))
-    return torch.Generator().manual_seed(seed)
+        return int(random_state)
+    return int(check_random_state(random_state).randint(_MAX_SEED))
+
+
+def make_generator(random_state) -> torch.Generator:
+    """Return a CPU generator seeded with ``torch_seed(random_state)``."""
+    return torch.Generator().manual_seed(torch_seed(random_state))
 
 
 def init_linear_(weight, bias, generator: torch.Generator) -> None:

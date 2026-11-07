@@ -22,12 +22,19 @@ the public API may change between minor versions; such changes are always listed
   experiments' saved test scores. Those settings train each model for
   only 20 Adam steps, which barely moves it from its random initial weights; the docstring
   says so, and longer training is a parameter away.
+- `pypu.models.ALMPU`: ALM-PU (Wei et al.), an MLP trained with an augmented-Lagrangian
+  constraint on the unlabeled samples, then retrained towards pseudo-labels from the trends
+  of its predictions. It ports the ALM-PU tabular benchmark code, whose settings are its
+  defaults, and trains the same network to the last bit under the same PyTorch. The
+  pseudo-labels, the trends and the estimated share of positives among the unlabeled samples
+  are attributes.
 - `pypu.prior.KMPrior`: the KM1 and KM2 class-prior estimators of Ramaswamy, Scott and
   Tewari, using the authors' code as the PUe experiments did, unchanged. `PUe` uses KM1 when
   no prior is given.
 - The optional extra `pypu-learn[cvxopt]` for the KM estimator. CVXOPT is licensed under the
   GPL-3.0.
-- The optional extra `pypu-learn[torch]` for the PyTorch-based models. They train on a
+- The optional extra `pypu-learn[torch]` for the PyTorch-based models, with jenkspy for
+  `ALMPU`. They train on a
   single CPU thread, so their results do not depend on the number of cores, and predict in
   float64, so that how the samples are batched only affects the last bits of predictions. On macOS, PyPU
   loads LightGBM before PyTorch, whose OpenMP runtimes otherwise crash each other.

@@ -164,9 +164,10 @@ trees ran both with linear SVMs.
      lightly modified. The author decided to port it unchanged, credited in
      `THIRD_PARTY_NOTICES.md`, with its solver CVXOPT (GPL-3.0) as the optional extra
      `pypu-learn[cvxopt]`, not distributed with PyPU (2026-11-07).
-   - Still to settle before 0.4.0 is released: `ALM-PU/` is a modified clone of the authors' repository (github.com/JiazheWei/ALM-PU),
+   - `ALM-PU/` is a modified clone of the authors' repository (github.com/JiazheWei/ALM-PU),
      which has no license; its EMA model and cosine schedule come from FixMatch-pytorch
-     (MIT).
+     (MIT). The author decided to port its tabular code as run, crediting both in
+     `THIRD_PARTY_NOTICES.md`, with FixMatch-pytorch's license text (2026-11-07).
 5. **Label conventions.** PyPU uses `s = 1` for labeled positives and `s = 0` for unlabeled.
    ALM-PU uses positive = 0 internally, and iFPNU's PNU step uses -1 for unlabeled; convert
    at the boundary.
@@ -296,6 +297,35 @@ trees ran both with linear SVMs.
       All 840 runs would take hours: KM on the 5000-sample datasets is the slow part.
     - KM builds the full kernel matrix and solves about 20 dense quadratic programs of the
       sample size: about a minute per fit on 3500 training samples, on one core.
+
+11. **ALM-PU (resolved).** `ALMPU` ports `ALM-PU/tabular.py` as the benchmark ran it
+    (`pu_benchmark.py`: `set_seed(i)`, one thread per worker), with its settings as defaults.
+    - Everything random (initial weights, the batches of the two data loaders, dropout) came
+      from PyTorch's global generator, so `fit` seeds it with `random_state` inside
+      `torch.random.fork_rng` and builds the same data loaders, in the same order: under the
+      same PyTorch the trends, pseudo-labels and network are the same to the last bit
+      (`tests/models/data/almpu_reference.npz`, from PyTorch 2.14).
+    - SGD amplifies rounding differences: under PyTorch 2.15 the original's own test scores in
+      the benchmark setting differ from 2.14's by up to 0.99 (phase 1's trends by 0.01, with the
+      same pseudo-labels), so the tests compare short trainings closely and only the
+      pseudo-labels of the full one.
+    - Not ported: the `three_sigma` option (tuned for images, off in the tabular runs) and the
+      per-epoch test metrics (logging only). Predictions are computed in float64 from the
+      trained network, as for `LBE` and `PUe`. When the trends take fewer than two distinct
+      values, jenkspy fails; PyPU raises a clear error.
+    - In 159 of the benchmark's 840 runs (52 Piechart, 40 Climate, 24 Pizzacutter, ...; most
+      with 75% of the positives hidden) the test ROC AUC is below 0.5. In those runs about 59%
+      of the unlabeled samples were pseudo-labeled positive, with precision 0.025, where about
+      3% were positive: the true positives' trends fell mostly below the Jenks break, and phase
+      2 learned the inverted labels. Documented; `pollution_` shows it.
+    - All 840 saved runs (`ALM-PU/output_ALMPU`, 84 settings × 10) regenerated with PyPU alone
+      under PyTorch 2.14 (legacy labels with `random_state=123`, the benchmark's splits,
+      `ALMPU(random_state=i)`), 2026-11-07: the estimated share of positives among the
+      unlabeled samples (`est_prior`, PyPU's `pollution_`) is the same in every run, and so is
+      the test ROC AUC when the scores are computed in float32, as the original did. With
+      PyPU's float64 predictions the ROC AUC is the same in 769 runs and differs by at most
+      2.6e-3 in the other 71, where float32 had rounded several test scores to the same
+      value (11 per run in the median) and float64 tells them apart.
 
 ## Validating ports
 

@@ -46,6 +46,8 @@ MODEL_PARAMS = {
     # The experiments' 20 steps barely train PUe (see its docstring); the checks need a
     # trained model. Its default KM estimate of the prior suits the checks' own data.
     "PUe": {"n_steps": 2000, "learning_rate": 0.01},
+    # 500 steps instead of the 5000 of the defaults, to keep the checks quick.
+    "ALMPU": {"n_warmup_epochs": 5, "n_finetune_epochs": 5, "n_steps_per_epoch": 50},
 }
 
 

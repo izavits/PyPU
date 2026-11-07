@@ -1,6 +1,16 @@
+import contextlib
+import sys
+
 import numpy as np
 import pytest
 from sklearn.datasets import make_classification
+
+# On macOS, LightGBM crashes when PyTorch was loaded before it (their OpenMP runtimes clash;
+# see pypu.models._torch). Some test modules import torch when pytest collects them, so load
+# LightGBM first.
+if sys.platform == "darwin":
+    with contextlib.suppress(ImportError, OSError):
+        import lightgbm  # noqa: F401
 
 
 @pytest.fixture

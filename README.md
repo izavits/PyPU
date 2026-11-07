@@ -7,7 +7,7 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/pypu-learn?label=Python)](https://pypi.org/project/pypu-learn/)
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/izavits/PyPU/blob/main/LICENSE)
 
-> **Status: alpha.** Thirteen models, PU data generation, evaluation and class-prior estimation
+> **Status: alpha.** Fourteen models, PU data generation, evaluation and class-prior estimation
 > are available; the API may still change before 1.0. More methods are planned: see the
 > [roadmap](https://github.com/izavits/PyPU/blob/main/ROADMAP.md).
 
@@ -33,7 +33,7 @@ On macOS, the LightGBM-based models need the OpenMP runtime, which LightGBM's wh
 include: `brew install libomp`.
 
 The XGBoost-based models (`UPUBoost`, `NNPUBoost`, `ImbalancedNNPUBoost`), the
-PyTorch-based models (`LBE`, `PUe`) and the KM estimator of the class prior (`KMPrior`, also
+PyTorch-based models (`LBE`, `PUe`, `ALMPU`) and the KM estimator of the class prior (`KMPrior`, also
 used by `PUe` when no prior is given) need optional extras:
 
 ```bash
@@ -215,7 +215,7 @@ flexible classifier (`estimator=`) can help BBE on non-linear data.
 | `NNPUBoost`, `ImbalancedNNPUBoost` | XGBoost on the objectives of the original nnPU and imbalanced nnPU experiments (weighted cross-entropies) | available (`[xgboost]` extra) |
 | `LBE` | Gong et al.: EM that learns a logistic classifier together with a logistic model of the labeling bias, as in the original experiments | available (`[torch]` extra) |
 | `PUe` | Wang et al.: a logistic classifier trained with normalized inverse propensity weights, as in the original experiments | available (`[torch]` extra) |
-| `ALMPU` | ALM-PU: a neural network trained with an augmented Lagrangian (optional PyTorch dependency) | planned (0.4.0) |
+| `ALMPU` | Wei et al.: an MLP trained with an augmented-Lagrangian constraint on the unlabeled samples, then retrained towards pseudo-labels from the trends of its predictions | available (`[torch]` extra) |
 
 `IFPU`'s defaults are the settings of the original iFPU experiments (10 trees, learning rate
 0.1, focal `gamma=3`), and it reproduces their test scores exactly:
@@ -309,6 +309,20 @@ from pypu.models import PUe
 
 as_run = PUe(random_state=0).fit(X_train, s_train)  # KM1 prior, needs the cvxopt extra
 trained = PUe(prior=0.2, n_steps=2000, learning_rate=0.01, random_state=0).fit(X_train, s_train)
+```
+
+`ALMPU` ports the ALM-PU code of the tabular benchmark, with its settings (a small MLP, 20
+epochs of the constrained phase, then 30 towards the pseudo-labels). Under the same PyTorch
+it trains the same network to the last bit, and under the benchmark's PyTorch it regenerates
+all of its saved runs.
+On the smallest datasets its pseudo-labels sometimes go wrong, which `pollution_` (the share
+of unlabeled samples pseudo-labeled positive) shows:
+
+```python
+from pypu.models import ALMPU
+
+clf = ALMPU(random_state=0).fit(X_train, s_train)  # random_state=i: set_seed(i)
+clf.pollution_  # far above the expected share of positives: distrust the model
 ```
 
 ## Contributing
