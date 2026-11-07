@@ -38,6 +38,9 @@ MODEL_PARAMS = {
     "IFPNU": {"prior": 0.3},
     "PUHellingerTree": {"prior": 0.3},
     "PUHellingerForest": {"prior": 0.3, "n_estimators": 10},
+    "UPUBoost": {"prior": 0.3, "n_estimators": 10},
+    "NNPUBoost": {"prior": 0.3, "n_estimators": 10},
+    "ImbalancedNNPUBoost": {"prior": 0.3, "n_estimators": 10},
 }
 
 

@@ -11,7 +11,8 @@ file tracks what is planned, where the code comes from, and what to watch for wh
 | 0.0.x | Scaffold: packaging, base class, `NaivePU`, CI, release workflow, project documents. Trial release to TestPyPI. |
 | 0.1.0 (released 2026-11-06) | `pypu.datasets` (PU data from labeled datasets), `pypu.metrics`, class-prior estimation (Elkan–Noto, BBE), `IFPU`, `IFPNU`, `SAREM`, `ElkanNoto`, `PUBagging`. |
 | 0.2.0 (released 2026-11-07) | `PUHellingerTree` and `PUHellingerForest`, rewritten in NumPy. |
-| 0.3.0 | Optional PyTorch extra: `NNPU`/`UPU` networks, `LBE`, `PUe` (with the KM prior estimator), `ALMPU`. |
+| 0.3.0 | Optional XGBoost extra: `UPUBoost`, `NNPUBoost`, `ImbalancedNNPUBoost`, the boosting PU risks of the Hellinger trees experiments (done on main). |
+| 0.4.0 | Optional PyTorch extra: `NNPU`/`UPU` networks, `LBE`, `PUe` (with the KM prior estimator), `ALMPU`. |
 | Later | `SpyEM`, `RankPruning`, loaders for the benchmark datasets, a documentation site, a benchmark table comparing all methods. |
 
 ## Methods and their sources
@@ -25,6 +26,7 @@ are identical to the copies in `pu_monorepo/iFPNU/`, so the monorepo is the sing
 | `IFPNU` | `pu_monorepo/iFPNU/main_2step_ad.py` (reliable negatives) and `pu/fpu_xgb.py` (`pnu_focal_loss`) | lightgbm, an anomaly detector (scikit-learn's by default, PyOD optional) |
 | `ALMPU` | `pu_monorepo/ALM-PU/tabular.py` | torch, jenkspy |
 | `PUHellingerTree`, `PUHellingerForest` | `pu_monorepo/PU_Hellinger_Trees/pu_tree_simplified/` | none after the rewrite |
+| `UPUBoost`, `NNPUBoost`, `ImbalancedNNPUBoost` | `pu_monorepo/PU_Hellinger_Trees/ecsmodels/methodologies/cs_boost.py` (`CSBoost`, objectives `puwce`, `nnpu`, `imbnnpu`), configured in `uPU_clean.py`, `nnPU_clean.py`, `imbalancedNNPU_clean.py` | xgboost (optional extra) |
 | `SAREM` | `pu_monorepo/iFPNU/models/SAREM.py`, `models/helper_files/sarpu/` | scikit-learn |
 | `LBE` | `pu_monorepo/iFPNU/models/LBE.py`, `models/helper_files/lbe/` | torch |
 | `PUe` | `pu_monorepo/iFPNU/models/PUe.py`, `models/helper_files/km.py` | torch, cvxopt |
@@ -203,6 +205,29 @@ trees ran both with linear SVMs.
    - `predict_propensity` and `propensity_features` are new. On synthetic SAR data whose
      propensity depends on one feature, restricting the propensity to it recovers the true
      propensity (correlation 0.99); with all features it does not (0.67).
+8. **Boosting PU risks (resolved).** `UPUBoost`, `NNPUBoost` and `ImbalancedNNPUBoost` port
+   the `puwce`, `nnpu` and `imbnnpu` objectives of `CSBoost`, with the experiments' XGBoost
+   settings (100 rounds, `eta` 0.3, `max_depth` 6, `reg_lambda` 0, `tree_method="exact"`,
+   `c = mean(s) / prior`, `oversampling=0.5`).
+   - `puwce` is the unbiased PU risk. `nnpu` and `imbnnpu` take the non-negative max per
+     sample, of a coefficient that is always negative for labeled samples, so the correction
+     always removes their negative term: `nnpu` is labeled `l+ / c` and unlabeled `l-`;
+     `imbnnpu` is labeled `rho l+` and unlabeled `(1 - rho) / (1 - prior) l-`. Neither is the
+     published nnPU (Kiryo et al.) or imbalanced nnPU (Su et al.), which clip the total
+     negative risk. Ported as run, documented in the docstrings; decided with the author on
+     2026-11-07.
+   - The original ran under NumPy 1, where float32 arrays times float64 scalars stay
+     float32, so most of its gradient arithmetic was float32; the port reproduces those
+     dtypes. In the original environment (XGBoost 2.1.3, x86), PyPU's objectives give the
+     same trees bit for bit. On arm64 the float32 sigmoid differs in the last bit (scores
+     within 2e-6); XGBoost 3.4 changes them by up to 3e-3. uPU's risk is unbounded below,
+     so its scores reach about 100 and amplify those differences to about 2, with the same
+     test ranking (ROC AUC equal to 4 decimals). The tests compare the gradients at fixed
+     scores (`tests/models/data/risk_boost_reference.npz`) and the scores within 1e-2.
+   - The saved results (`output_nnpu`, `output_upu`, `output_imbnnpu`) cannot be
+     regenerated: the scripts shuffle each dataset with an unseeded `np.random.shuffle` and
+     save metrics only. They also compute `prior` and `mean(s)` on the whole dataset, test
+     part included; PyPU uses the training data.
 
 ## Validating ports
 

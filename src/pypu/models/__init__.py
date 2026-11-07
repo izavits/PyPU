@@ -22,11 +22,14 @@ _MODELS: dict[str, str] = {
     "IFPNU": "pypu.models.ifpnu",
     "IFPU": "pypu.models.ifpu",
     "ElkanNoto": "pypu.models.elkan_noto",
+    "ImbalancedNNPUBoost": "pypu.models.risk_boost",
+    "NNPUBoost": "pypu.models.risk_boost",
     "NaivePU": "pypu.models.naive",
     "PUBagging": "pypu.models.bagging",
     "PUHellingerForest": "pypu.models.hellinger",
     "PUHellingerTree": "pypu.models.hellinger",
     "SAREM": "pypu.models.sarem",
+    "UPUBoost": "pypu.models.risk_boost",
 }
 
 __all__ = [
@@ -34,10 +37,13 @@ __all__ = [
     "IFPU",
     "SAREM",
     "ElkanNoto",
+    "ImbalancedNNPUBoost",
+    "NNPUBoost",
     "NaivePU",
     "PUBagging",
     "PUHellingerForest",
     "PUHellingerTree",
+    "UPUBoost",
 ]
 
 if TYPE_CHECKING:
@@ -47,6 +53,7 @@ if TYPE_CHECKING:
     from pypu.models.ifpnu import IFPNU
     from pypu.models.ifpu import IFPU
     from pypu.models.naive import NaivePU
+    from pypu.models.risk_boost import ImbalancedNNPUBoost, NNPUBoost, UPUBoost
     from pypu.models.sarem import SAREM
 
 

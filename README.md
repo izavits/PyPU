@@ -32,6 +32,13 @@ belongs to an unrelated project, hence `pypu-learn`.)
 On macOS, the LightGBM-based models need the OpenMP runtime, which LightGBM's wheels do not
 include: `brew install libomp`.
 
+The XGBoost-based models (`UPUBoost`, `NNPUBoost`, `ImbalancedNNPUBoost`) need an optional
+extra:
+
+```bash
+pip install "pypu-learn[xgboost]"
+```
+
 To try features that are not released yet, install from GitHub:
 
 ```bash
@@ -188,6 +195,8 @@ flexible classifier (`estimator=`) can help BBE on non-linear data.
 | `PUBagging` | Mordelet and Vert: classifiers trained on the labeled positives against bootstrap samples of the unlabeled ones | available |
 | `PUHellingerTree` | Decision tree whose splits maximize a Hellinger distance between estimated positives and negatives | available |
 | `PUHellingerForest` | Random forest of those trees, each on all labeled positives and a bootstrap sample of the unlabeled ones | available |
+| `UPUBoost` | XGBoost on the unbiased PU risk (uPU) | on main (0.3.0) |
+| `NNPUBoost`, `ImbalancedNNPUBoost` | XGBoost on the objectives of the original nnPU and imbalanced nnPU experiments (weighted cross-entropies) | on main (0.3.0) |
 | `NNPU`, `LBE`, `PUe`, `ALMPU` | Neural PU methods (optional PyTorch dependency) | planned (0.3.0) |
 
 `IFPU`'s defaults are the settings of the original iFPU experiments (10 trees, learning rate
@@ -243,6 +252,20 @@ from pypu.models import PUHellingerForest, PUHellingerTree
 tree = PUHellingerTree(prior=0.2, max_depth=5, random_state=0).fit(X_train, s_train)
 forest = PUHellingerForest(prior=0.2, random_state=0).fit(X_train, s_train)
 scores = forest.predict_proba(X_test)[:, 1]  # rank samples; not calibrated
+```
+
+"On main" models are not released yet; install from GitHub to try them. The boosting models
+port the XGBoost objectives of the PU Hellinger trees experiments, with their settings (100
+rounds, learning rate 0.3, no L2 regularization). The original nnPU and imbalanced nnPU
+objectives apply the non-negative correction per sample, which makes them weighted
+cross-entropies rather than Kiryo et al.'s nnPU; PyPU reproduces them as run:
+
+```python
+from pypu.models import ImbalancedNNPUBoost, NNPUBoost, UPUBoost
+
+upu = UPUBoost(prior=0.2, random_state=0).fit(X_train, s_train)
+nnpu = NNPUBoost(prior=0.2, random_state=0).fit(X_train, s_train)
+imbalanced = ImbalancedNNPUBoost(prior=0.2, oversampled_prior=0.5).fit(X_train, s_train)
 ```
 
 ## Contributing

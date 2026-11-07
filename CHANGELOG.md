@@ -9,6 +9,18 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+### Added
+
+- `pypu.models.UPUBoost`: XGBoost trained on the unbiased PU risk (uPU).
+- `pypu.models.NNPUBoost` and `pypu.models.ImbalancedNNPUBoost`: XGBoost trained on the
+  objectives of the original nnPU and imbalanced nnPU experiments. Those apply the
+  non-negative correction per sample, which always removes the labeled samples' negative
+  term, so they are weighted cross-entropies; the docstrings say so.
+- All three port the custom objectives of the PU Hellinger trees experiments (`CSBoost`),
+  with their settings. Their gradients match the original to float32 rounding, and their
+  test scores match within 1e-2 (exactly under the original's XGBoost 2.1 and platform).
+- The optional extra `pypu-learn[xgboost]` for these models.
+
 ## [0.2.0] - 2026-11-07
 
 PU Hellinger-distance decision trees and forests, rewritten in NumPy from the original
