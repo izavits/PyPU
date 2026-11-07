@@ -10,7 +10,7 @@ file tracks what is planned, where the code comes from, and what to watch for wh
 | --- | --- |
 | 0.0.x | Scaffold: packaging, base class, `NaivePU`, CI, release workflow, project documents. Trial release to TestPyPI. |
 | 0.1.0 (released 2026-11-06) | `pypu.datasets` (PU data from labeled datasets), `pypu.metrics`, class-prior estimation (Elkan–Noto, BBE), `IFPU`, `IFPNU`, `SAREM`, `ElkanNoto`, `PUBagging`. |
-| 0.2.0 | `PUHellingerTree` and `PUHellingerForest`, rewritten in NumPy. |
+| 0.2.0 | `PUHellingerTree` and `PUHellingerForest`, rewritten in NumPy (done on main). |
 | 0.3.0 | Optional PyTorch extra: `NNPU`/`UPU` networks, `LBE`, `PUe` (with the KM prior estimator), `ALMPU`. |
 | Later | `SpyEM`, `RankPruning`, loaders for the benchmark datasets, a documentation site, a benchmark table comparing all methods. |
 
@@ -124,10 +124,32 @@ trees ran both with linear SVMs.
      of the original code on synthetic data for the test suite.
    - TODO: add the iFPU and iFPNU papers' references to the docstrings and the README once
      available.
-3. **Hellinger trees.** The Cython code is a fork of scikit-learn ~0.24 tree internals: it
-   imports `numpy.math` (removed in NumPy 2) and private scikit-learn modules, and only builds
-   under Python 3.8. It will be rewritten in NumPy (the split criterion is short) and checked
-   against outputs of the old implementation. A compiled version can follow if speed requires.
+3. **Hellinger trees (resolved).** The Cython code is a fork of scikit-learn 1.0.2's tree
+   internals: it imports `numpy.math` (removed in NumPy 2) and private scikit-learn modules,
+   and only builds under Python 3.8. `PUHellingerTree` and `PUHellingerForest` rewrite it in
+   NumPy.
+   - The criterion estimates the positives of a child as `min(n, L / c)`, with `L` its
+     (weighted) labeled count and `c = P(s = 1) / prior` computed once on all training
+     samples, and scores a split by the squared Hellinger distance between those estimated
+     positives and negatives over the two children. Nodes without labeled samples become
+     leaves; nodes of labeled samples only keep splitting (every split scores 1).
+   - Many splits tie under this criterion, and the first one found wins, so the rewrite
+     replicates scikit-learn's best splitter exactly: the `our_rand_r` xorshift draws of
+     features, the bookkeeping of constant features across nodes, the float32
+     `FEATURE_THRESHOLD`, float64 midpoint thresholds, and the depth-first order of nodes.
+     Against outputs of the original under Python 3.8 (`tests/models/data/hellinger_reference.npz`:
+     six trees and two forests, including constant, duplicated and discrete features) the
+     trees are identical, node for node, and so are the predictions.
+   - `predict_proba` is the fraction of labeled samples in the leaf, as the experiments used;
+     `predict_pu_proba` is the original's corrected probability. The forest's `max_samples`
+     defaults to the number of unlabeled samples, the experiments' setting (the original
+     class defaulted to the number of samples).
+   - A forest of 100 trees on 5000 samples fits in about 2 s, so no compiled version is
+     needed for now.
+   - The saved results (`output/results_*.csv`) cannot be regenerated: `expsetup_clean.py`
+     shuffles each dataset with an unseeded `np.random.shuffle`, and saves metrics only. Its
+     threshold-tuning tree is fitted with `p_y = mean(noisy_y)`, which makes `1 / c = 1`, so
+     that tree has no PU correction; the final tree and the forest get the true prior.
 4. **Licensing.** Upstream code under MIT/BSD (PU_Hellinger_Trees, SAR-PU, pulearn,
    rankpruning) can be ported with attribution in `THIRD_PARTY_NOTICES.md`. No license was
    found for the ALM-PU, LBE, PUe, OptIForest and KM-MPE code: check, or reimplement from

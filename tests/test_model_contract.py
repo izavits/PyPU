@@ -33,7 +33,12 @@ PU_EXPECTED_FAILED_CHECKS = {
 
 # Parameters set on top of the defaults. Models that need the class prior get the prior of the
 # pu_data fixture.
-MODEL_PARAMS = {"IFPU": {"prior": 0.3}, "IFPNU": {"prior": 0.3}}
+MODEL_PARAMS = {
+    "IFPU": {"prior": 0.3},
+    "IFPNU": {"prior": 0.3},
+    "PUHellingerTree": {"prior": 0.3},
+    "PUHellingerForest": {"prior": 0.3, "n_estimators": 10},
+}
 
 
 def make_model(name):
@@ -86,7 +91,7 @@ class TestModelContract:
         model = make_model(name).fit(X, s)
         y_pred = model.predict(X)
         assert set(np.unique(y_pred)) <= {0, 1}
-        expected = (model.predict_proba(X)[:, 1] >= model.threshold_).astype(int)
+        expected = (model.predict_proba(X)[:, 1] > model.threshold_).astype(int)
         np.testing.assert_array_equal(y_pred, expected)
 
     def test_decision_function_ranks_like_proba(self, name, pu_data):

@@ -35,13 +35,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## scikit-learn `BaggingClassifier`, adapted for PU learning by Roy Wright
+## scikit-learn
 
-- **Used in:** `src/pypu/models/bagging.py` (`PUBagging`). The way bags are drawn, including
-  the order of the random draws, follows `BaggingPuClassifier`, so that both build the same
-  bags.
-- **Source:** `BaggingPuClassifier` by Roy Wright, an adaptation for PU learning of
-  scikit-learn's `BaggingClassifier` by Gilles Louppe (https://github.com/scikit-learn/scikit-learn).
+Two parts of PyPU follow scikit-learn code (https://github.com/scikit-learn/scikit-learn):
+
+- **`BaggingClassifier`, adapted for PU learning by Roy Wright.** Used in
+  `src/pypu/models/bagging.py` (`PUBagging`): the way bags are drawn, including the order of
+  the random draws, follows Roy Wright's `BaggingPuClassifier`, an adaptation of Gilles
+  Louppe's `BaggingClassifier`, so that both build the same bags.
+- **Decision trees (scikit-learn 1.0), as forked by the PU Hellinger trees code.** Used in
+  `src/pypu/models/_hellinger_tree.py` and `src/pypu/models/hellinger.py`
+  (`PUHellingerTree`, `PUHellingerForest`): a NumPy rewrite of the depth-first tree builder,
+  the best splitter and its random number generator (`sklearn/tree/_tree.pyx`,
+  `_splitter.pyx`, `_utils.pyx`), and of the forest's seeding and bootstrap, so that the
+  trees are those of the original code.
 - **License:** BSD 3-Clause.
 
 ```

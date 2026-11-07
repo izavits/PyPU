@@ -24,14 +24,26 @@ _MODELS: dict[str, str] = {
     "ElkanNoto": "pypu.models.elkan_noto",
     "NaivePU": "pypu.models.naive",
     "PUBagging": "pypu.models.bagging",
+    "PUHellingerForest": "pypu.models.hellinger",
+    "PUHellingerTree": "pypu.models.hellinger",
     "SAREM": "pypu.models.sarem",
 }
 
-__all__ = ["IFPNU", "IFPU", "SAREM", "ElkanNoto", "NaivePU", "PUBagging"]
+__all__ = [
+    "IFPNU",
+    "IFPU",
+    "SAREM",
+    "ElkanNoto",
+    "NaivePU",
+    "PUBagging",
+    "PUHellingerForest",
+    "PUHellingerTree",
+]
 
 if TYPE_CHECKING:
     from pypu.models.bagging import PUBagging
     from pypu.models.elkan_noto import ElkanNoto
+    from pypu.models.hellinger import PUHellingerForest, PUHellingerTree
     from pypu.models.ifpnu import IFPNU
     from pypu.models.ifpu import IFPU
     from pypu.models.naive import NaivePU

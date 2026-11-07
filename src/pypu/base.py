@@ -30,7 +30,8 @@ class BasePUClassifier(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
       positive. By default it is the log-odds of the positive-class probability, so ``0``
       corresponds to a probability of ``0.5``.
     - ``predict(X)`` returns hard labels in ``{0, 1}``: a sample is predicted positive when
-      its positive-class probability is at least :attr:`threshold_`.
+      its positive-class probability is above :attr:`threshold_`. A probability equal to the
+      threshold counts as negative, as with scikit-learn's ``argmax`` of ``predict_proba``.
 
     ``score(X, y)`` (from :class:`~sklearn.base.ClassifierMixin`) computes the accuracy
     against *true* labels ``y``, not against PU labels.
@@ -122,11 +123,11 @@ class BasePUClassifier(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
         Returns
         -------
         y_pred : ndarray of shape (n_samples,)
-            ``1`` for samples whose positive-class probability is at least
+            ``1`` for samples whose positive-class probability is above
             :attr:`threshold_`, ``0`` otherwise.
         """
         proba = self.predict_proba(X)[:, 1]
-        return self.classes_[(proba >= self.threshold_).astype(np.int64)]
+        return self.classes_[(proba > self.threshold_).astype(np.int64)]
 
     # ------------------------------------------------------------------ hooks for subclasses
 

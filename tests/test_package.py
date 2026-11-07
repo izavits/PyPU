@@ -1,4 +1,5 @@
 import importlib
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -23,9 +24,14 @@ def test_models_are_listed_and_importable():
 
 def test_model_registry_and_all_agree():
     source = Path(pypu.models.__file__).read_text()
+    imported = {
+        (match.group(1), name.strip())
+        for match in re.finditer(r"from (pypu\.models\.\w+) import ([\w, ]+)", source)
+        for name in match.group(2).split(",")
+    }
     assert sorted(pypu.models.__all__) == sorted(pypu.models._MODELS)
     for name, module in pypu.models._MODELS.items():
-        assert f"from {module} import {name}" in source, f"{name} missing from TYPE_CHECKING"
+        assert (module, name) in imported, f"{name} missing from TYPE_CHECKING"
 
 
 def test_unknown_model_raises_attribute_error():

@@ -9,6 +9,24 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+### Added
+
+- `pypu.models.PUHellingerTree`: a decision tree whose splits maximize the Hellinger
+  distance between the estimated positives and negatives, using the class prior. A NumPy
+  rewrite of the original PU Hellinger tree code (a Cython fork of scikit-learn 1.0's
+  trees, which only built under Python 3.8): it builds the same trees for the same data and
+  `random_state`. `predict_pu_proba` gives the original code's prior-corrected
+  probabilities.
+- `pypu.models.PUHellingerForest`: a random forest of those trees, each grown on all labeled
+  positives and a bootstrap sample of the unlabeled samples. It builds the same trees as
+  the original `PURandomForestClassifier`, and defaults to the settings of its experiments.
+
+### Changed
+
+- `predict` now counts a positive-class probability equal to `threshold_` as negative, as
+  scikit-learn does (the `argmax` of `predict_proba`, the sign of `decision_function`); it
+  counted it as positive. Only exact ties change, which trees produce often.
+
 ## [0.1.0] - 2026-11-06
 
 The first release with PU learning methods: five new models, four of them ported from research

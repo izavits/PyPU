@@ -33,7 +33,17 @@ def test_defaults(pu_data):
     np.testing.assert_allclose(model.predict_proba(X)[:, 1], expit(X[:, 0]))
     # The default decision function is the log-odds, so it is 0 where the probability is 0.5.
     np.testing.assert_allclose(model.decision_function(X), X[:, 0])
-    np.testing.assert_array_equal(model.predict(X), (X[:, 0] >= 0).astype(int))
+    np.testing.assert_array_equal(model.predict(X), (X[:, 0] > 0).astype(int))
+
+
+def test_probability_equal_to_the_threshold_predicts_negative(pu_data):
+    # As scikit-learn's argmax of predict_proba, and the sign of decision_function.
+    X, _, s = pu_data
+    model = FirstFeatureModel().fit(X, s)
+    X_tie = np.zeros((1, X.shape[1]))
+    assert model.predict_proba(X_tie)[0, 1] == 0.5
+    assert model.predict(X_tie)[0] == 0
+    assert model.decision_function(X_tie)[0] == 0.0
 
 
 def test_float32_input_is_kept(pu_data):

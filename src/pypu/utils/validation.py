@@ -147,8 +147,8 @@ def threshold_from_prior(scores, prior: float) -> float:
     Returns
     -------
     threshold : float
-        The ``1 - prior`` quantile of ``scores``; samples with ``score >= threshold``
-        are labeled positive.
+        The ``1 - prior`` quantile of ``scores``, so that a ``prior`` fraction of them lies
+        above it (up to ties).
     """
     prior = check_prior(prior)
     scores = np.asarray(scores, dtype=np.float64).reshape(-1)
