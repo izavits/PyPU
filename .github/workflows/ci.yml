@@ -47,6 +47,9 @@ jobs:
       - name: Install OpenMP (LightGBM's macOS wheels do not bundle it)
         if: runner.os == 'macOS'
         run: brew install libomp
+      - name: Install PyTorch's CPU build (PyPI's Linux wheels pull in CUDA)
+        if: runner.os == 'Linux'
+        run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
       - name: Install
         run: |
           python -m pip install --upgrade pip
@@ -74,6 +77,7 @@ jobs:
         run: twine check --strict dist/*
       - name: Install the wheel and import it
         run: |
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
           WHEEL=$(ls dist/*.whl)
-          python -m pip install "${WHEEL}[xgboost]"
+          python -m pip install "${WHEEL}[xgboost,torch]"
           cd /tmp && python -c "import pypu, pypu.models; [getattr(pypu.models, m) for m in pypu.models.__all__]; print(pypu.__version__)"

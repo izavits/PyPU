@@ -7,7 +7,7 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/pypu-learn?label=Python)](https://pypi.org/project/pypu-learn/)
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/izavits/PyPU/blob/main/LICENSE)
 
-> **Status: alpha.** Eleven models, PU data generation, evaluation and class-prior estimation
+> **Status: alpha.** Twelve models, PU data generation, evaluation and class-prior estimation
 > are available; the API may still change before 1.0. More methods are planned: see the
 > [roadmap](https://github.com/izavits/PyPU/blob/main/ROADMAP.md).
 
@@ -32,12 +32,19 @@ belongs to an unrelated project, hence `pypu-learn`.)
 On macOS, the LightGBM-based models need the OpenMP runtime, which LightGBM's wheels do not
 include: `brew install libomp`.
 
-The XGBoost-based models (`UPUBoost`, `NNPUBoost`, `ImbalancedNNPUBoost`) need an optional
-extra:
+The XGBoost-based models (`UPUBoost`, `NNPUBoost`, `ImbalancedNNPUBoost`) and the
+PyTorch-based models (`LBE`) need optional extras:
 
 ```bash
 pip install "pypu-learn[xgboost]"
+pip install "pypu-learn[torch]"
 ```
+
+On Linux, PyPI's PyTorch wheels include CUDA; for the smaller CPU build, install PyTorch
+first as described on [pytorch.org](https://pytorch.org). On macOS, PyTorch bundles its own
+OpenMP runtime, which conflicts with the one LightGBM uses: PyPU loads LightGBM first and
+runs its PyTorch models on one thread, so they work together, but importing `torch` yourself
+before using a LightGBM-based model can crash LightGBM.
 
 To try features that are not released yet, install from GitHub:
 
@@ -197,7 +204,8 @@ flexible classifier (`estimator=`) can help BBE on non-linear data.
 | `PUHellingerForest` | Random forest of those trees, each on all labeled positives and a bootstrap sample of the unlabeled ones | available |
 | `UPUBoost` | XGBoost on the unbiased PU risk (uPU) | available (`[xgboost]` extra) |
 | `NNPUBoost`, `ImbalancedNNPUBoost` | XGBoost on the objectives of the original nnPU and imbalanced nnPU experiments (weighted cross-entropies) | available (`[xgboost]` extra) |
-| `LBE`, `PUe`, `ALMPU` | Neural PU methods (optional PyTorch dependency) | planned (0.4.0) |
+| `LBE` | Gong et al.: EM that learns a logistic classifier together with a logistic model of the labeling bias, as in the original experiments | available (`[torch]` extra) |
+| `PUe`, `ALMPU` | Neural PU methods (optional PyTorch dependency) | planned (0.4.0) |
 
 `IFPU`'s defaults are the settings of the original iFPU experiments (10 trees, learning rate
 0.1, focal `gamma=3`), and it reproduces their test scores exactly:
@@ -266,6 +274,19 @@ from pypu.models import ImbalancedNNPUBoost, NNPUBoost, UPUBoost
 upu = UPUBoost(prior=0.2, random_state=0).fit(X_train, s_train)
 nnpu = NNPUBoost(prior=0.2, random_state=0).fit(X_train, s_train)
 imbalanced = ImbalancedNNPUBoost(prior=0.2, oversampled_prior=0.5).fit(X_train, s_train)
+```
+
+`LBE` (`pip install "pypu-learn[torch]"`) ports the LBE code of the iFPNU experiments, with
+their settings: logistic models trained by Adam, 1000 pre-training steps, then 100 EM
+iterations of 100 steps. Under the same PyTorch it gives the original's results to the last
+bit. As in that code, its labeling-bias model ends up as a classifier of labeled versus
+unlabeled samples rather than the propensity (see the docstring):
+
+```python
+from pypu.models import LBE
+
+clf = LBE(random_state=0).fit(X_train, s_train)  # random_state=i: torch.manual_seed(i)
+scores = clf.decision_function(X_test)
 ```
 
 ## Contributing

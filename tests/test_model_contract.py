@@ -41,6 +41,8 @@ MODEL_PARAMS = {
     "UPUBoost": {"prior": 0.3, "n_estimators": 10},
     "NNPUBoost": {"prior": 0.3, "n_estimators": 10},
     "ImbalancedNNPUBoost": {"prior": 0.3, "n_estimators": 10},
+    # 600 optimizer steps instead of the 11,000 of the defaults, to keep the checks quick.
+    "LBE": {"n_iter": 10, "n_m_steps": 40, "n_pretrain_steps": 200},
 }
 
 

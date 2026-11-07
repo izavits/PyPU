@@ -9,6 +9,17 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+### Added
+
+- `pypu.models.LBE`: LBE (Gong et al.), which learns a logistic classifier together with a
+  logistic model of the labeling bias by EM. It ports the LBE code of the iFPNU experiments,
+  whose settings are its defaults, and gives the original's results to the last bit under
+  the same PyTorch. As in that code, the labeling-bias model is fitted as a classifier of
+  labeled versus unlabeled samples; the docstring explains how this departs from the paper.
+- The optional extra `pypu-learn[torch]` for the PyTorch-based models. They train on a
+  single CPU thread, so their results do not depend on the number of cores. On macOS, PyPU
+  loads LightGBM before PyTorch, whose OpenMP runtimes otherwise crash each other.
+
 ## [0.3.0] - 2026-11-07
 
 Gradient boosting on PU risks: uPU, and the nnPU and imbalanced nnPU objectives of the

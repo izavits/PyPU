@@ -153,10 +153,17 @@ trees ran both with linear SVMs.
      threshold-tuning tree is fitted with `p_y = mean(noisy_y)`, which makes `1 / c = 1`, so
      that tree has no PU correction; the final tree and the forest get the true prior.
 4. **Licensing.** Upstream code under MIT/BSD (PU_Hellinger_Trees, SAR-PU, pulearn,
-   rankpruning) can be ported with attribution in `THIRD_PARTY_NOTICES.md`. No license was
-   found for the ALM-PU, LBE, PUe, OptIForest and KM-MPE code: check, or reimplement from
-   the papers. `IFPNU` defaults to scikit-learn's `IsolationForest` and accepts any PyOD
-   detector instead of vendoring OptIForest.
+   rankpruning) can be ported with attribution in `THIRD_PARTY_NOTICES.md`. `IFPNU` defaults
+   to scikit-learn's `IsolationForest` and accepts any PyOD detector instead of vendoring
+   OptIForest. For 0.4.0 the author decided (2026-11-07) to port the implementations in the
+   local repositories rather than reimplement the papers. Checked the same day, two of them
+   contain other people's code without a license, to settle before 0.4.0 is released:
+   - `iFPNU/models/helper_files/km.py` (used by `PUe`) is the kernel mixture proportion
+     estimation code of Ramaswamy, Scott and Tewari, downloaded from C. Scott's website and
+     lightly modified.
+   - `ALM-PU/` is a modified clone of the authors' repository (github.com/JiazheWei/ALM-PU),
+     which has no license; its EMA model and cosine schedule come from FixMatch-pytorch
+     (MIT).
 5. **Label conventions.** PyPU uses `s = 1` for labeled positives and `s = 0` for unlabeled.
    ALM-PU uses positive = 0 internally, and iFPNU's PNU step uses -1 for unlabeled; convert
    at the boundary.
@@ -229,6 +236,30 @@ trees ran both with linear SVMs.
      save metrics only. They also compute `prior` and `mean(s)` on the whole dataset, test
      part included; PyPU uses the training data.
 
+9. **LBE (resolved).** `LBE` ports the experiments' wrapper (`iFPNU/models/LBE.py`) and
+   `lbe_train` (`models/helper_files/lbe/LBE.py`).
+   - The wrapper passes `kind='LR'` and `epochs=250`, which `lbe_train` ignores: it always
+     uses logistic models, 1000 pre-training steps, and 100 EM iterations of 100 Adam steps,
+     all with learning rate 0.01 on the full batch. Those are PyPU's defaults. The helper's
+     MLP option is not ported (its zero-initialized propensity network could only learn its
+     bias), nor are the gradients `loss` computes by hand and never uses.
+   - The expected log-likelihood gives unlabeled samples a `log(1 - eta)` term for `y = 0`
+     too, so the "propensity" `eta` is fitted as `P(s = 1 | x)`, a logistic regression of `s`
+     on `x` (the logits agree with scikit-learn's to a correlation of 0.9999999), and the
+     E-step overestimates `P(y = 1 | x, s = 0)`. Ported as run and documented.
+   - Under the same PyTorch, PyPU gives the original's probabilities to the last bit. The
+     reference (`tests/models/data/lbe_reference.npz`) comes from PyTorch 2.8, the
+     experiments' version; under 2.15 the original itself moves by up to 1.5e-4, so the tests
+     compare whole fits within 2e-3, and one E-step and the M-step gradients at fixed weights
+     within 1e-5.
+   - `main_LBE.py` did not seed PyTorch, so each saved run's initial weights depend on the
+     runs before it in the same process; the saved scores are not regenerated here.
+   - On macOS, PyTorch's bundled OpenMP runtime and Homebrew's (used by LightGBM and
+     XGBoost) crash each other in one process: LightGBM fails if PyTorch was loaded first,
+     and PyTorch fails when it runs on several threads. `pypu.models._torch` imports
+     LightGBM before PyTorch, and the PyTorch models run on one thread, which also makes
+     their results independent of the number of cores.
+
 ## Validating ports
 
 The old virtual environments still exist. For each ported method, save predictions of the
@@ -245,4 +276,4 @@ PyPU version reproduces them (within a tolerance, documented when they differ on
 - Core dependencies stay small: numpy, scipy, scikit-learn and lightgbm (since `IFPU`).
   LightGBM's macOS wheels need Homebrew's `libomp`; models are imported lazily, so this only
   affects the LightGBM-based models.
-  PyTorch, XGBoost and PyOD are optional extras.
+  PyTorch (`[torch]`), XGBoost (`[xgboost]`) and PyOD are optional.
