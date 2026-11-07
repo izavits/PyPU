@@ -288,8 +288,8 @@ imbalanced = ImbalancedNNPUBoost(prior=0.2, oversampled_prior=0.5).fit(X_train, 
 
 `LBE` (`pip install "pypu-learn[torch]"`) ports the LBE code of the iFPNU experiments, with
 their settings: logistic models trained by Adam, 1000 pre-training steps, then 100 EM
-iterations of 100 steps. Under the same PyTorch it gives the original's results to the last
-bit. As in that code, its labeling-bias model ends up as a classifier of labeled versus
+iterations of 100 steps. Under the same PyTorch it fits the original's weights to the last
+bit (and predicts from them in float64). As in that code, its labeling-bias model ends up as a classifier of labeled versus
 unlabeled samples rather than the propensity (see the docstring):
 
 ```python
@@ -299,9 +299,9 @@ clf = LBE(random_state=0).fit(X_train, s_train)  # random_state=i: torch.manual_
 scores = clf.decision_function(X_test)
 ```
 
-`PUe` ports the PUe code of the same experiments and gives the original's results to the
-last bit. Its defaults are their settings, including only 20 Adam steps per model, which barely train it:
-its scores stay close to those of its random initial weights. Raise `n_steps` and
+`PUe` ports the PUe code of the same experiments and fits the original's weights to the last
+bit. Its defaults are their settings, including only 20 Adam steps per model, which barely
+train it: its scores stay close to those of its random initial weights. Raise `n_steps` and
 `learning_rate` for a trained model. Without a `prior`, it estimates one with KM1:
 
 ```python

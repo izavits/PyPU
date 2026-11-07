@@ -81,9 +81,9 @@ def check_e_step_and_gradients(reference, case):
 
 @pytest.mark.parametrize("case", CASES)
 def test_reproduces_the_original(reference, fitted, case):
-    # Under the same PyTorch, PyPU and the original give the same probabilities to the last
-    # bit. The reference comes from PyTorch 2.8, the experiments' version; 11,000 float32 Adam
-    # steps amplify the small numerical changes of later versions (1.5e-4 under PyTorch 2.15,
+    # Under the same PyTorch, PyPU and the original fit the same weights to the last bit. The
+    # reference comes from PyTorch 2.8, the experiments' version; 11,000 float32 Adam steps
+    # amplify the small numerical changes of later versions (1.5e-4 under PyTorch 2.15,
     # for the original code too).
     proba = fitted[case].predict_proba(reference["X_test"])
     np.testing.assert_allclose(proba, reference[f"{case}_proba"], atol=2e-3)
@@ -133,8 +133,17 @@ def test_decision_function_is_the_logit(pu_data):
     X, _, s = pu_data
     model = LBE(random_state=0, **SHORT).fit(X, s)
     logit = model.decision_function(X)
-    np.testing.assert_allclose(logit, X @ model.coef_ + model.intercept_, rtol=1e-5, atol=1e-5)
-    np.testing.assert_allclose(model.predict_proba(X)[:, 1], expit(logit), rtol=1e-6)
+    np.testing.assert_array_equal(logit, X @ model.coef_ + model.intercept_)
+    np.testing.assert_array_equal(model.predict_proba(X)[:, 1], expit(logit))
+
+
+def test_predictions_do_not_depend_on_batching(pu_data):
+    X, _, s = pu_data
+    model = LBE(random_state=0, **SHORT).fit(X, s)
+    one_by_one = np.concatenate([model.decision_function(X[i : i + 1]) for i in range(len(X))])
+    # Matrix products round differently for different numbers of rows; in float64 (unlike
+    # float32, which failed scikit-learn's check) only in the last bits.
+    np.testing.assert_allclose(model.decision_function(X), one_by_one, rtol=1e-12)
 
 
 def test_more_steps_change_the_fit(pu_data):

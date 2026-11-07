@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import numpy as np
+from scipy.special import expit
 
 from pypu.base import BasePUClassifier
 from pypu.models._torch import (
@@ -64,7 +65,7 @@ class PUe(BasePUClassifier):
     alpha : float, default=15.0
         Weight of the propensity's penalty :math:`|\sum_i e(x_i) - n_l|`.
     device : str or torch.device, default="cpu"
-        Device to train on, such as ``"cuda"``. Predictions are computed on the CPU.
+        Device to train on, such as ``"cuda"``.
     random_state : int, RandomState instance or None, default=None
         Seed of the initial weights of both models. An int ``i`` gives the same weights as
         ``seed(i)`` did in the experiments (``torch.manual_seed(i)``).
@@ -98,9 +99,11 @@ class PUe(BasePUClassifier):
     Notes
     -----
     Needs PyTorch (``pip install 'pypu-learn[torch]'``), and cvxopt for the KM estimate of
-    the prior (``pip install 'pypu-learn[cvxopt]'``; GPL-3.0). Training and prediction use
-    float32, as the original code did. ``decision_function`` returns the classifier's logit,
-    whose sigmoid is ``predict_proba(X)[:, 1]``.
+    the prior (``pip install 'pypu-learn[cvxopt]'``; GPL-3.0). Training uses float32, as the
+    original code did, and gives the same weights. Predictions are computed from them in
+    float64 with NumPy (the original used float32), so that how the samples are batched
+    only affects their last bits. ``decision_function`` returns the classifier's logit,
+    ``X @ coef_ + intercept_``, whose sigmoid is ``predict_proba(X)[:, 1]``.
 
     References
     ----------
@@ -156,19 +159,14 @@ class PUe(BasePUClassifier):
             weights
         )
 
-    def _logits(self, X):
-        weight = torch.from_numpy(self.coef_.astype(np.float32)).reshape(1, -1)
-        bias = torch.tensor([self.intercept_], dtype=torch.float32)
-        with torch.no_grad():
-            return F.linear(as_float32_tensor(X), weight, bias).squeeze(1)
-
     def _decision_function(self, X):
-        with single_thread():
-            return self._logits(X).numpy()
+        # In float64 from the fitted float32 weights. The rounding of a matrix product can
+        # depend on how many rows are multiplied at once: in float32 that changes predictions
+        # by up to 1e-7 depending on batching, in float64 only in the last bits.
+        return X @ self.coef_ + self.intercept_
 
     def _predict_proba(self, X):
-        with single_thread():
-            return torch.sigmoid(self._logits(X)).numpy()
+        return expit(self._decision_function(X))
 
 
 def _km1_prior(X, s):

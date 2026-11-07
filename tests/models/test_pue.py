@@ -24,8 +24,9 @@ def reference():
 @pytest.mark.parametrize("case", CASES)
 def test_reproduces_the_original(reference, case):
     # The original's KM prior and 20 Adam steps per model: under PyTorch 2.8 (the reference)
-    # and 2.15 alike, PyPU gives the same probabilities and weights to the last bit. Other
-    # platforms' float32 arithmetic can differ in the last bits.
+    # and 2.15 alike, PyPU fits the same weights to the last bit, and its float64
+    # probabilities agree with the original's float32 ones. Other platforms' float32
+    # arithmetic can differ in the last bits.
     model = PUe(random_state=int(reference[f"{case}_seed"]))
     model.fit(reference["X_train"], reference[f"{case}_s"])
     assert model.prior_ == pytest.approx(float(reference[f"{case}_prior"]), rel=1e-12)
@@ -117,8 +118,17 @@ def test_decision_function_is_the_logit(pu_data):
     X, _, s = pu_data
     model = PUe(prior=0.3, random_state=0).fit(X, s)
     logit = model.decision_function(X)
-    np.testing.assert_allclose(logit, X @ model.coef_ + model.intercept_, rtol=1e-5, atol=1e-5)
-    np.testing.assert_allclose(model.predict_proba(X)[:, 1], expit(logit), rtol=1e-6)
+    np.testing.assert_array_equal(logit, X @ model.coef_ + model.intercept_)
+    np.testing.assert_array_equal(model.predict_proba(X)[:, 1], expit(logit))
+
+
+def test_predictions_do_not_depend_on_batching(pu_data):
+    X, _, s = pu_data
+    model = PUe(prior=0.3, random_state=0).fit(X, s)
+    one_by_one = np.concatenate([model.decision_function(X[i : i + 1]) for i in range(len(X))])
+    # Matrix products round differently for different numbers of rows; in float64 (unlike
+    # float32, which failed scikit-learn's check) only in the last bits.
+    np.testing.assert_allclose(model.decision_function(X), one_by_one, rtol=1e-12)
 
 
 def test_random_state(pu_data):

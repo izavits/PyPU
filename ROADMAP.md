@@ -250,7 +250,10 @@ trees ran both with linear SVMs.
      too, so the "propensity" `eta` is fitted as `P(s = 1 | x)`, a logistic regression of `s`
      on `x` (the logits agree with scikit-learn's to a correlation of 0.9999999), and the
      E-step overestimates `P(y = 1 | x, s = 0)`. Ported as run and documented.
-   - Under the same PyTorch, PyPU gives the original's probabilities to the last bit. The
+   - Under the same PyTorch, PyPU fits the original's weights to the last bit. Predictions
+     are computed from them in float64 with NumPy: in float32, as the original did, the
+     rounding of the matrix product depends on how many rows are multiplied at once on some
+     platforms, which failed scikit-learn's subset-invariance check on Linux. The
      reference (`tests/models/data/lbe_reference.npz`) comes from PyTorch 2.8, the
      experiments' version; under 2.15 the original itself moves by up to 1.5e-4, so the tests
      compare whole fits within 2e-3, and one E-step and the M-step gradients at fixed weights
@@ -280,13 +283,15 @@ trees ran both with linear SVMs.
       unlabeled samples weigh `n_u` times more than in a risk estimate, and the negative term
       is not clipped. Ported as run, documented.
     - Against the reference (`tests/models/data/pue_reference.npz`, PyTorch 2.8 and cvxopt
-      1.3.3), the KM estimates, the prior, both models' weights and the test probabilities
-      agree to the last bit, under PyTorch 2.15 too.
+      1.3.3), the KM estimates, the prior and both models' weights agree to the last bit,
+      under PyTorch 2.15 too; the test probabilities, computed in float64 as for `LBE`, agree
+      to float32 precision.
     - `main_PUe.py` seeded each run, so the saved scores (`iFPNU/output_PUe`, 84 settings ×
       10 runs) can be regenerated with PyPU alone (legacy labels with `random_state=123`, the
       experiments' splits, `PUe(random_state=i)`). In the 18 settings checked so far (Cardio,
-      Climate, Letter) every score agrees within one float32 rounding unit (6e-8) and every
-      ROC AUC is the same; the other settings are being checked.
+      Climate, Letter), predictions computed in float32 from the regenerated weights, as the
+      original did, agree with every saved score within one rounding unit (6e-8), with the
+      same ROC AUC; the other settings are being checked.
     - KM builds the full kernel matrix and solves about 20 dense quadratic programs of the
       sample size: about a minute per fit on 3500 training samples, on one core.
 
