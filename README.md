@@ -7,7 +7,7 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/pypu-learn?label=Python)](https://pypi.org/project/pypu-learn/)
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/izavits/PyPU/blob/main/LICENSE)
 
-> **Status: alpha.** Six models, PU data generation, evaluation and class-prior estimation
+> **Status: alpha.** Eight models, PU data generation, evaluation and class-prior estimation
 > are available; the API may still change before 1.0. More methods are planned: see the
 > [roadmap](https://github.com/izavits/PyPU/blob/main/ROADMAP.md).
 
@@ -186,8 +186,8 @@ flexible classifier (`estimator=`) can help BBE on non-linear data.
 | `SAREM` | Bekker et al.: EM that learns the classifier together with the propensity, the probability that a positive gets labeled (SAR) | available |
 | `ElkanNoto` | Elkan and Noto: a labeled-vs-unlabeled classifier corrected by the label frequency, or retrained on weighted unlabeled samples | available |
 | `PUBagging` | Mordelet and Vert: classifiers trained on the labeled positives against bootstrap samples of the unlabeled ones | available |
-| `PUHellingerTree` | Decision tree whose splits maximize a Hellinger distance between estimated positives and negatives | on main (0.2.0) |
-| `PUHellingerForest` | Random forest of those trees, each on all labeled positives and a bootstrap sample of the unlabeled ones | on main (0.2.0) |
+| `PUHellingerTree` | Decision tree whose splits maximize a Hellinger distance between estimated positives and negatives | available |
+| `PUHellingerForest` | Random forest of those trees, each on all labeled positives and a bootstrap sample of the unlabeled ones | available |
 | `NNPU`, `LBE`, `PUe`, `ALMPU` | Neural PU methods (optional PyTorch dependency) | planned (0.3.0) |
 
 `IFPU`'s defaults are the settings of the original iFPU experiments (10 trees, learning rate
@@ -234,9 +234,8 @@ bagging = PUBagging(SVC(kernel="linear"), oob_proba=True).fit(X_train, s_train)
 unlabeled_scores = bagging.oob_proba_[s_train == 0, 1]
 ```
 
-"On main" models are not released yet; install from GitHub to try them. `PUHellingerTree`
-and `PUHellingerForest` build the same trees as the original PU Hellinger tree code, now
-in NumPy; their defaults are the settings of its experiments:
+`PUHellingerTree` and `PUHellingerForest` build the same trees as the original PU
+Hellinger tree code, now in NumPy; their defaults are the settings of its experiments:
 
 ```python
 from pypu.models import PUHellingerForest, PUHellingerTree

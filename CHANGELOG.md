@@ -9,6 +9,11 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-07
+
+PU Hellinger-distance decision trees and forests, rewritten in NumPy from the original
+Cython code and checked to build the same trees.
+
 ### Added
 
 - `pypu.models.PUHellingerTree`: a decision tree whose splits maximize the Hellinger
@@ -103,6 +108,7 @@ evaluation metrics (including estimates from PU labels alone) and class-prior es
 - `pypu.utils.check_pu_labels`, `pypu.utils.check_prior`, `pypu.utils.threshold_from_prior`
   and `pypu.show_versions()`.
 
-[Unreleased]: https://github.com/izavits/PyPU/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/izavits/PyPU/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/izavits/PyPU/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/izavits/PyPU/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/izavits/PyPU/releases/tag/v0.0.1

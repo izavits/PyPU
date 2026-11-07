@@ -10,7 +10,7 @@ file tracks what is planned, where the code comes from, and what to watch for wh
 | --- | --- |
 | 0.0.x | Scaffold: packaging, base class, `NaivePU`, CI, release workflow, project documents. Trial release to TestPyPI. |
 | 0.1.0 (released 2026-11-06) | `pypu.datasets` (PU data from labeled datasets), `pypu.metrics`, class-prior estimation (Elkan–Noto, BBE), `IFPU`, `IFPNU`, `SAREM`, `ElkanNoto`, `PUBagging`. |
-| 0.2.0 | `PUHellingerTree` and `PUHellingerForest`, rewritten in NumPy (done on main). |
+| 0.2.0 (released 2026-11-07) | `PUHellingerTree` and `PUHellingerForest`, rewritten in NumPy. |
 | 0.3.0 | Optional PyTorch extra: `NNPU`/`UPU` networks, `LBE`, `PUe` (with the KM prior estimator), `ALMPU`. |
 | Later | `SpyEM`, `RankPruning`, loaders for the benchmark datasets, a documentation site, a benchmark table comparing all methods. |
 
