@@ -299,8 +299,8 @@ clf = LBE(random_state=0).fit(X_train, s_train)  # random_state=i: torch.manual_
 scores = clf.decision_function(X_test)
 ```
 
-`PUe` ports the PUe code of the same experiments and fits the original's weights to the last
-bit. Its defaults are their settings, including only 20 Adam steps per model, which barely
+`PUe` ports the PUe code of the same experiments: it fits the original's weights to the last
+bit, and regenerates the experiments' saved test scores. Its defaults are their settings, including only 20 Adam steps per model, which barely
 train it: its scores stay close to those of its random initial weights. Raise `n_steps` and
 `learning_rate` for a trained model. Without a `prior`, it estimates one with KM1:
 

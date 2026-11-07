@@ -288,10 +288,12 @@ trees ran both with linear SVMs.
       to float32 precision.
     - `main_PUe.py` seeded each run, so the saved scores (`iFPNU/output_PUe`, 84 settings ×
       10 runs) can be regenerated with PyPU alone (legacy labels with `random_state=123`, the
-      experiments' splits, `PUe(random_state=i)`). In the 18 settings checked so far (Cardio,
-      Climate, Letter), predictions computed in float32 from the regenerated weights, as the
-      original did, agree with every saved score within one rounding unit (6e-8), with the
-      same ROC AUC; the other settings are being checked.
+      experiments' splits, `PUe(random_state=i)`). Checked on 2026-11-07 for all 84
+      settings: every run of the Cardio, Climate and Letter settings (180 runs, predictions
+      computed in float32 as the original did) and the first run of each of the other 66
+      settings (with PyPU's float64 predictions). Every regenerated score agrees with the saved
+      one within float32 rounding (at most 1.7e-7), and every ROC AUC is the same (to 6e-17).
+      All 840 runs would take hours: KM on the 5000-sample datasets is the slow part.
     - KM builds the full kernel matrix and solves about 20 dense quadratic programs of the
       sample size: about a minute per fit on 3500 training samples, on one core.
 

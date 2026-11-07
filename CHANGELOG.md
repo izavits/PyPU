@@ -18,7 +18,8 @@ the public API may change between minor versions; such changes are always listed
   labeled versus unlabeled samples; the docstring explains how this departs from the paper.
 - `pypu.models.PUe`: PUe (Wang et al.), a logistic classifier trained with normalized
   inverse propensity weights. It ports the PUe code of the iFPNU experiments, whose settings
-  are its defaults, and fits the original's weights to the last bit. Those settings train each model for
+  are its defaults, fits the original's weights to the last bit and regenerates the
+  experiments' saved test scores. Those settings train each model for
   only 20 Adam steps, which barely moves it from its random initial weights; the docstring
   says so, and longer training is a parameter away.
 - `pypu.prior.KMPrior`: the KM1 and KM2 class-prior estimators of Ramaswamy, Scott and
