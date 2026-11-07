@@ -7,7 +7,7 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/pypu-learn?label=Python)](https://pypi.org/project/pypu-learn/)
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/izavits/PyPU/blob/main/LICENSE)
 
-> **Status: alpha.** Eight models, PU data generation, evaluation and class-prior estimation
+> **Status: alpha.** Eleven models, PU data generation, evaluation and class-prior estimation
 > are available; the API may still change before 1.0. More methods are planned: see the
 > [roadmap](https://github.com/izavits/PyPU/blob/main/ROADMAP.md).
 
@@ -195,9 +195,9 @@ flexible classifier (`estimator=`) can help BBE on non-linear data.
 | `PUBagging` | Mordelet and Vert: classifiers trained on the labeled positives against bootstrap samples of the unlabeled ones | available |
 | `PUHellingerTree` | Decision tree whose splits maximize a Hellinger distance between estimated positives and negatives | available |
 | `PUHellingerForest` | Random forest of those trees, each on all labeled positives and a bootstrap sample of the unlabeled ones | available |
-| `UPUBoost` | XGBoost on the unbiased PU risk (uPU) | on main (0.3.0) |
-| `NNPUBoost`, `ImbalancedNNPUBoost` | XGBoost on the objectives of the original nnPU and imbalanced nnPU experiments (weighted cross-entropies) | on main (0.3.0) |
-| `NNPU`, `LBE`, `PUe`, `ALMPU` | Neural PU methods (optional PyTorch dependency) | planned (0.3.0) |
+| `UPUBoost` | XGBoost on the unbiased PU risk (uPU) | available (`[xgboost]` extra) |
+| `NNPUBoost`, `ImbalancedNNPUBoost` | XGBoost on the objectives of the original nnPU and imbalanced nnPU experiments (weighted cross-entropies) | available (`[xgboost]` extra) |
+| `NNPU`, `LBE`, `PUe`, `ALMPU` | Neural PU methods (optional PyTorch dependency) | planned (0.4.0) |
 
 `IFPU`'s defaults are the settings of the original iFPU experiments (10 trees, learning rate
 0.1, focal `gamma=3`), and it reproduces their test scores exactly:
@@ -254,9 +254,9 @@ forest = PUHellingerForest(prior=0.2, random_state=0).fit(X_train, s_train)
 scores = forest.predict_proba(X_test)[:, 1]  # rank samples; not calibrated
 ```
 
-"On main" models are not released yet; install from GitHub to try them. The boosting models
-port the XGBoost objectives of the PU Hellinger trees experiments, with their settings (100
-rounds, learning rate 0.3, no L2 regularization). The original nnPU and imbalanced nnPU
+The boosting models (`pip install "pypu-learn[xgboost]"`) port the XGBoost objectives of the
+PU Hellinger trees experiments, with their settings (100 rounds, learning rate 0.3, no L2
+regularization). The original nnPU and imbalanced nnPU
 objectives apply the non-negative correction per sample, which makes them weighted
 cross-entropies rather than Kiryo et al.'s nnPU; PyPU reproduces them as run:
 

@@ -9,6 +9,11 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-07
+
+Gradient boosting on PU risks: uPU, and the nnPU and imbalanced nnPU objectives of the
+original experiments, with XGBoost as an optional extra.
+
 ### Added
 
 - `pypu.models.UPUBoost`: XGBoost trained on the unbiased PU risk (uPU).
@@ -120,7 +125,8 @@ evaluation metrics (including estimates from PU labels alone) and class-prior es
 - `pypu.utils.check_pu_labels`, `pypu.utils.check_prior`, `pypu.utils.threshold_from_prior`
   and `pypu.show_versions()`.
 
-[Unreleased]: https://github.com/izavits/PyPU/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/izavits/PyPU/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/izavits/PyPU/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/izavits/PyPU/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/izavits/PyPU/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/izavits/PyPU/releases/tag/v0.0.1
