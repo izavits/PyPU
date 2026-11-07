@@ -307,8 +307,8 @@ trees ran both with linear SVMs.
       (`tests/models/data/almpu_reference.npz`, from PyTorch 2.14).
     - SGD amplifies rounding differences: under PyTorch 2.15 the original's own test scores in
       the benchmark setting differ from 2.14's by up to 0.99 (phase 1's trends by 0.01, with the
-      same pseudo-labels), so the tests compare short trainings closely and only the
-      pseudo-labels of the full one.
+      same pseudo-labels; on CI's Linux runners 4 of 367 pseudo-labels flip), so the tests
+      compare short trainings closely and the full one's pseudo-labels loosely.
     - Not ported: the `three_sigma` option (tuned for images, off in the tabular runs) and the
       per-epoch test metrics (logging only). Predictions are computed in float64 from the
       trained network, as for `LBE` and `PUe`. When the trends take fewer than two distinct
