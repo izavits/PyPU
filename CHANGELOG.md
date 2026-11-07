@@ -9,35 +9,41 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-07
+
+Three neural PU methods from the iFPNU and ALM-PU experiments, ported as they were run, and
+the KM estimator of the class prior. They come with the optional extras `pypu-learn[torch]`
+and `pypu-learn[cvxopt]`.
+
 ### Added
 
 - `pypu.models.LBE`: LBE (Gong et al.), which learns a logistic classifier together with a
   logistic model of the labeling bias by EM. It ports the LBE code of the iFPNU experiments,
-  whose settings are its defaults, and fits the original's weights to the last bit under
-  the same PyTorch. As in that code, the labeling-bias model is fitted as a classifier of
-  labeled versus unlabeled samples; the docstring explains how this departs from the paper.
-- `pypu.models.PUe`: PUe (Wang et al.), a logistic classifier trained with normalized
-  inverse propensity weights. It ports the PUe code of the iFPNU experiments, whose settings
-  are its defaults, fits the original's weights to the last bit and regenerates the
-  experiments' saved test scores. Those settings train each model for
-  only 20 Adam steps, which barely moves it from its random initial weights; the docstring
-  says so, and longer training is a parameter away.
+  whose settings are its defaults, and fits the original's weights to the last bit under the
+  same PyTorch. As in that code, the labeling-bias model is fitted as a classifier of labeled
+  versus unlabeled samples; the docstring explains how this departs from the paper.
+- `pypu.models.PUe`: PUe (Wang et al.), a logistic classifier trained with normalized inverse
+  propensity weights. It ports the PUe code of the iFPNU experiments, whose settings are its
+  defaults, fits the original's weights to the last bit and regenerates the experiments'
+  saved test scores. Those settings train each model for only 20 Adam steps, which barely
+  moves it from its random initial weights; the docstring says so, and longer training is a
+  parameter away.
 - `pypu.models.ALMPU`: ALM-PU (Wei et al.), an MLP trained with an augmented-Lagrangian
   constraint on the unlabeled samples, then retrained towards pseudo-labels from the trends
   of its predictions. It ports the ALM-PU tabular benchmark code, whose settings are its
-  defaults, and trains the same network to the last bit under the same PyTorch. The
-  pseudo-labels, the trends and the estimated share of positives among the unlabeled samples
-  are attributes.
+  defaults: under the same PyTorch it trains the same network to the last bit, and under the
+  benchmark's PyTorch it regenerates all of its saved runs. The pseudo-labels, their trends
+  and the estimated share of positives among the unlabeled samples are attributes.
 - `pypu.prior.KMPrior`: the KM1 and KM2 class-prior estimators of Ramaswamy, Scott and
   Tewari, using the authors' code as the PUe experiments did, unchanged. `PUe` uses KM1 when
   no prior is given.
-- The optional extra `pypu-learn[cvxopt]` for the KM estimator. CVXOPT is licensed under the
-  GPL-3.0.
 - The optional extra `pypu-learn[torch]` for the PyTorch-based models, with jenkspy for
-  `ALMPU`. They train on a
-  single CPU thread, so their results do not depend on the number of cores, and predict in
-  float64, so that how the samples are batched only affects the last bits of predictions. On macOS, PyPU
-  loads LightGBM before PyTorch, whose OpenMP runtimes otherwise crash each other.
+  `ALMPU`. They train on a single CPU thread, so their results do not depend on the number
+  of cores, and predict in float64, so that how the samples are batched only affects the last
+  bits of their predictions. On macOS, PyPU loads LightGBM before PyTorch, as their OpenMP
+  runtimes otherwise crash each other.
+- The optional extra `pypu-learn[cvxopt]` for the KM estimator. CVXOPT is licensed under the
+  GPL-3.0; PyPU stays under the BSD 3-Clause License.
 
 ## [0.3.0] - 2026-11-07
 
@@ -155,7 +161,8 @@ evaluation metrics (including estimates from PU labels alone) and class-prior es
 - `pypu.utils.check_pu_labels`, `pypu.utils.check_prior`, `pypu.utils.threshold_from_prior`
   and `pypu.show_versions()`.
 
-[Unreleased]: https://github.com/izavits/PyPU/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/izavits/PyPU/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/izavits/PyPU/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/izavits/PyPU/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/izavits/PyPU/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/izavits/PyPU/compare/v0.0.1...v0.1.0
