@@ -216,11 +216,11 @@ flexible classifier (`estimator=`) can help BBE on non-linear data.
 | `LBE` | Gong et al.: EM that learns a logistic classifier together with a logistic model of the labeling bias, as in the original experiments | available (`[torch]` extra) |
 | `PUe` | Wang et al.: a logistic classifier trained with normalized inverse propensity weights, as in the original experiments | available (`[torch]` extra) |
 | `ALMPU` | Wei et al.: an MLP trained with an augmented-Lagrangian constraint on the unlabeled samples, then retrained towards pseudo-labels from the trends of its predictions | available (`[torch]` extra) |
-| `RebalancedPU` | Elkan's rebalancing: a labeled-vs-unlabeled classifier with sample weights from the label frequency, so that it classifies like a classifier of the true labels | on main (0.5.0) |
-| `PropensityWeightedPU` | Bekker et al.: risk minimization on SAR data with a known (or estimated) propensity, weighting labeled samples by its inverse | on main (0.5.0) |
-| `BiasedSVM` | Liu et al.: an SVM on PU labels with class weights chosen by Lee and Liu's criterion | on main (0.5.0) |
-| `SpyPU` | Liu et al.: reliable negatives below hidden "spies", then a classifier, optionally refined by EM (S-EM) | on main (0.5.0) |
-| `PEBL` | Reliable negatives from spies or from 1-DNF (binary features), then an iterative SVM (Spy-SVM, PEBL) | on main (0.5.0) |
+| `RebalancedPU` | Elkan's rebalancing: a labeled-vs-unlabeled classifier with sample weights from the label frequency, so that it classifies like a classifier of the true labels | available |
+| `PropensityWeightedPU` | Bekker et al.: risk minimization on SAR data with a known (or estimated) propensity, weighting labeled samples by its inverse | available |
+| `BiasedSVM` | Liu et al.: an SVM on PU labels with class weights chosen by Lee and Liu's criterion | available |
+| `SpyPU` | Liu et al.: reliable negatives below hidden "spies", then a classifier, optionally refined by EM (S-EM) | available |
+| `PEBL` | Reliable negatives from spies or from 1-DNF (binary features), then an iterative SVM (Spy-SVM, PEBL) | available |
 
 `IFPU`'s defaults are the settings of the original iFPU experiments (10 trees, learning rate
 0.1, focal `gamma=3`), and it reproduces their test scores exactly:
@@ -330,9 +330,8 @@ clf = ALMPU(random_state=0).fit(X_train, s_train)  # random_state=i: set_seed(i)
 clf.pollution_  # far above the expected share of positives: distrust the model
 ```
 
-The classic methods of Bekker and Davis's survey ("on main" models are not released yet;
-install from GitHub to try them) need only scikit-learn. Two need the class prior or the
-propensity; the two-step methods find reliable negatives first:
+The classic methods of Bekker and Davis's survey need only scikit-learn. Two need the class
+prior or the propensity; the two-step methods find reliable negatives first:
 
 ```python
 from pypu.models import PEBL, BiasedSVM, PropensityWeightedPU, RebalancedPU, SpyPU
