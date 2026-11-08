@@ -48,6 +48,8 @@ MODEL_PARAMS = {
     "PUe": {"n_steps": 2000, "learning_rate": 0.01},
     # 500 steps instead of the 5000 of the defaults, to keep the checks quick.
     "ALMPU": {"n_warmup_epochs": 5, "n_finetune_epochs": 5, "n_steps_per_epoch": 50},
+    "RebalancedPU": {"prior": 0.3},
+    "PropensityWeightedPU": {"propensity": 0.5},
 }
 
 
@@ -59,11 +61,13 @@ def make_model(name):
 
 
 # The checks fit on their own data, where the fixed prior is often below the labeled fraction,
-# where random labels make ElkanNoto's estimate of the label frequency imply a prior of 1, and
-# where SAREM's EM can wander on random labels.
+# where random labels make ElkanNoto's estimate of the label frequency imply a prior of 1,
+# where SAREM's EM can wander on random labels, and where random labels can leave no unlabeled
+# sample below the spies.
 @pytest.mark.filterwarnings("ignore:prior=.* is lower than the fraction of labeled:UserWarning")
 @pytest.mark.filterwarnings("ignore:The estimated label frequency .* is clipped:UserWarning")
 @pytest.mark.filterwarnings("ignore:SAREM did not converge:sklearn.exceptions.ConvergenceWarning")
+@pytest.mark.filterwarnings("ignore:No unlabeled sample scores below the spies:UserWarning")
 @parametrize_with_checks(
     [make_model(name) for name in MODEL_NAMES],
     expected_failed_checks=lambda estimator: PU_EXPECTED_FAILED_CHECKS,

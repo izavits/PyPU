@@ -13,7 +13,8 @@ file tracks what is planned, where the code comes from, and what to watch for wh
 | 0.2.0 (released 2026-11-07) | `PUHellingerTree` and `PUHellingerForest`, rewritten in NumPy. |
 | 0.3.0 (released 2026-11-07) | Optional XGBoost extra: `UPUBoost`, `NNPUBoost`, `ImbalancedNNPUBoost`, the boosting PU risks of the Hellinger trees experiments. |
 | 0.4.0 (released 2026-11-07) | Optional PyTorch extra: `LBE`, `PUe`, `ALMPU`; the KM prior estimator (`KMPrior`, optional cvxopt extra). uPU and nnPU are covered by the boosting models of 0.3.0, so no network versions are planned. |
-| Later | `SpyEM`, `RankPruning`, loaders for the benchmark datasets, a documentation site, a benchmark table comparing all methods. |
+| 0.5.0 | Classic methods of Bekker and Davis's survey, after the notebooks of github.com/hkiyomaru/pu-learning (MIT): `RebalancedPU` (Elkan's rebalancing), `PropensityWeightedPU` (risk minimization with a known propensity), `BiasedSVM`, `SpyPU` (spy two-step, optional S-EM refinement), `PEBL` (iterative SVM after spy or 1-DNF negatives). |
+| Later | `RankPruning`, loaders for the benchmark datasets, a documentation site, a benchmark table comparing all methods. |
 
 ## Methods and their sources
 
@@ -30,7 +31,8 @@ are identical to the copies in `pu_monorepo/iFPNU/`, so the monorepo is the sing
 | `SAREM` | `pu_monorepo/iFPNU/models/SAREM.py`, `models/helper_files/sarpu/` | scikit-learn |
 | `LBE` | `pu_monorepo/iFPNU/models/LBE.py`, `models/helper_files/lbe/` | torch |
 | `PUe` | `pu_monorepo/iFPNU/models/PUe.py`, `models/helper_files/km.py` | torch, cvxopt |
-| `ElkanNoto`, `PUBagging`, `SpyEM`, `RankPruning` | `pu_monorepo/PU_Hellinger_Trees/pos_noisyneg/` | scikit-learn (SpyEM: pomegranate) |
+| `ElkanNoto`, `PUBagging`, `RankPruning` | `pu_monorepo/PU_Hellinger_Trees/pos_noisyneg/` | scikit-learn |
+| `RebalancedPU`, `PropensityWeightedPU`, `BiasedSVM`, `SpyPU`, `PEBL` | The papers, checked against the notebooks of github.com/hkiyomaru/pu-learning (MIT); `SpyPU` replaces the planned `SpyEM` of `pos_noisyneg/spyEM.py` (which needed pomegranate and imbalanced-learn) | scikit-learn |
 | Focal nnPU losses (not planned: network nnPU dropped) | `pu_monorepo/iFPNU/pu/losses.py` | torch |
 
 ## Data utilities (`pypu.datasets`, 0.1.0): done
@@ -326,6 +328,35 @@ trees ran both with linear SVMs.
       PyPU's float64 predictions the ROC AUC is the same in 769 runs and differs by at most
       2.6e-3 in the other 71, where float32 had rounded several test scores to the same
       value (11 per run in the median) and float64 tells them apart.
+
+12. **Classic methods (0.5.0).** Implemented from the papers and Bekker and Davis's survey,
+    and checked against the notebooks of github.com/hkiyomaru/pu-learning (MIT) on their data
+    (two Gaussian classes in two dimensions), 2026-11-08:
+    - `SpyPU` with the notebook's step-1 classifier (logistic regression) and seed: the same
+      spies, threshold and reliable negatives, and the same probabilities. The notebook also
+      counted labeled samples below the threshold as negatives (none were, there); PyPU only
+      takes unlabeled ones. S-EM's EM refinement (`n_em_iter`) is new; its ΔE model selection
+      is not ported.
+    - `BiasedSVM` with the notebook's train/validation split as `cv`: the same Lee and Liu
+      criterion for every weight and the same chosen weight. The notebook's grid
+      `np.arange(0.7, 1.0, 0.05)` also yields 0.9999999999999998, on which SVC fails; PyPU's
+      default grid stops at 0.95.
+    - `PropensityWeightedPU` on the notebook's SAR data: the same probabilities when the
+      weights are computed in float64 (the notebook's were float32) and its one zero-weight
+      copy (e(x) = 1) is dropped, as PyPU does. The negative weights make the objective
+      non-convex: solved to a tight tolerance, float32 and float64 weights end 5e-3 apart, so
+      results depend on the solver; documented.
+    - `RebalancedPU` uses the survey's weights, w+ = 1 - c tau and w- = (1 - tau) c. The
+      notebook's, w+ = tau / (c tau) and w- = 1 - (1 - tau) / (1 - c tau), differ from them by
+      a factor 1 - c and are not used.
+    - `PEBL`: the notebook's 1-DNF for continuous features (a threshold per feature near the
+      1st percentile of the labeled samples, reliable negatives below every threshold)
+      reproduced its thresholds, reliable negatives, 17 iterations and selected SVM, but finds
+      no reliable negatives on ordinary tabular data (make_classification with 2 to 20
+      features), where some features do not separate the classes. Decided with the author:
+      reliable negatives come from spies by default (Spy-SVM; Liu et al., 2003) or from the
+      original 1-DNF for binary or count features (`negatives="1dnf"`); the iterative SVM and
+      its selection by Lee and Liu's criterion match the notebook's.
 
 ## Validating ports
 

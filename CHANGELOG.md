@@ -9,6 +9,24 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+### Added
+
+- Classic methods of Bekker and Davis's survey, checked against the notebooks of
+  github.com/hkiyomaru/pu-learning:
+  - `pypu.models.RebalancedPU`: Elkan's rebalancing of a classifier of labeled versus
+    unlabeled samples, with weights from the label frequency, so that it classifies at a
+    target threshold like a classifier of the true labels.
+  - `pypu.models.PropensityWeightedPU`: risk minimization on SAR data with a known propensity
+    (a number, or a function such as `SAREM.predict_propensity`), labeled samples counting as
+    positives with weight `1 / e(x)` and as negatives with weight `1 - 1 / e(x)`.
+  - `pypu.models.BiasedSVM`: an SVM on PU labels whose class weights are chosen by
+    cross-validation with Lee and Liu's criterion.
+  - `pypu.models.SpyPU`: the spy technique, reliable negatives below hidden labeled samples,
+    then a classifier, optionally refined by EM as in S-EM.
+  - `pypu.models.PEBL`: reliable negatives from spies (Spy-SVM) or from 1-DNF (binary or
+    count features), then an iterative SVM, keeping the iteration with the best Lee and Liu
+    criterion or the last one.
+
 ## [0.4.0] - 2026-11-07
 
 Three neural PU methods from the iFPNU and ALM-PU experiments, ported as they were run, and
