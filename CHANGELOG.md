@@ -9,6 +9,16 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+### Added
+
+- `pypu.models.RankPruning`: Rank Pruning (Northcutt et al.) in its PU learning mode. It
+  estimates the label noise by confident counts on out-of-fold probabilities (or takes the
+  class prior), prunes the unlabeled samples most likely to be positive, and refits with the
+  labeled samples reweighted. It ports the rankpruning package as copied into the PU
+  Hellinger trees code, and gives its results to the last bit; `random_state=i` gives the
+  folds it drew after `np.random.seed(i)`. The estimated class prior, the share of positives
+  among the unlabeled samples and the pruned samples are attributes.
+
 ## [0.5.0] - 2026-11-08
 
 Five classic PU methods of Bekker and Davis's survey, which need only scikit-learn:

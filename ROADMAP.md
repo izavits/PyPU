@@ -14,7 +14,8 @@ file tracks what is planned, where the code comes from, and what to watch for wh
 | 0.3.0 (released 2026-11-07) | Optional XGBoost extra: `UPUBoost`, `NNPUBoost`, `ImbalancedNNPUBoost`, the boosting PU risks of the Hellinger trees experiments. |
 | 0.4.0 (released 2026-11-07) | Optional PyTorch extra: `LBE`, `PUe`, `ALMPU`; the KM prior estimator (`KMPrior`, optional cvxopt extra). uPU and nnPU are covered by the boosting models of 0.3.0, so no network versions are planned. |
 | 0.5.0 (released 2026-11-08) | Classic methods of Bekker and Davis's survey, after the notebooks of github.com/hkiyomaru/pu-learning (MIT): `RebalancedPU` (Elkan's rebalancing), `PropensityWeightedPU` (risk minimization with a known propensity), `BiasedSVM`, `SpyPU` (spy two-step, optional S-EM refinement), `PEBL` (iterative SVM after spy or 1-DNF negatives). |
-| Later | `RankPruning`, loaders for the benchmark datasets, a documentation site, a benchmark table comparing all methods. |
+| 0.6.0 | `RankPruning`, from the PU Hellinger trees code (the rankpruning package, MIT). |
+| Later | Loaders for the benchmark datasets, a documentation site, a benchmark table comparing all methods. |
 
 ## Methods and their sources
 
@@ -357,6 +358,17 @@ trees ran both with linear SVMs.
       reliable negatives come from spies by default (Spy-SVM; Liu et al., 2003) or from the
       original 1-DNF for binary or count features (`negatives="1dnf"`); the iterative SVM and
       its selection by Lee and Liu's criterion match the notebook's.
+
+13. **RankPruning (resolved).** `RankPruning` ports `pos_noisyneg/rankpruning.py`, which is
+    C. G. Northcutt's rankpruning package (MIT) without one unused helper. The experiment
+    scripts imported it but never ran it, so the defaults are the package's, in its PU
+    learning mode (`fit(..., pulearning=True)`: labeled samples are clean, rho0 = 0); by
+    default the package also estimates a noise rate for the labeled samples. `prior` replaces
+    `frac_pos2neg` (rho1 = 1 - P(s = 1) / prior). The original shuffled its 3 folds with
+    NumPy's global random state; `random_state=i` gives the folds of `np.random.seed(i)`.
+    Against the original under the same scikit-learn (`tests/models/data/rank_pruning_reference.npz`,
+    with rho1 estimated or given), the noise rate, the estimated prior, the pollution, the
+    refitted coefficients and the test probabilities agree to the last bit.
 
 ## Validating ports
 

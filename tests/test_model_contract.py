@@ -62,12 +62,13 @@ def make_model(name):
 
 # The checks fit on their own data, where the fixed prior is often below the labeled fraction,
 # where random labels make ElkanNoto's estimate of the label frequency imply a prior of 1,
-# where SAREM's EM can wander on random labels, and where random labels can leave no unlabeled
-# sample below the spies.
+# where SAREM's EM can wander on random labels, where random labels can leave no unlabeled
+# sample below the spies, and where some datasets are too small for RankPruning to prune.
 @pytest.mark.filterwarnings("ignore:prior=.* is lower than the fraction of labeled:UserWarning")
 @pytest.mark.filterwarnings("ignore:The estimated label frequency .* is clipped:UserWarning")
 @pytest.mark.filterwarnings("ignore:SAREM did not converge:sklearn.exceptions.ConvergenceWarning")
 @pytest.mark.filterwarnings("ignore:No unlabeled sample scores below the spies:UserWarning")
+@pytest.mark.filterwarnings("ignore:RankPruning prunes nothing:UserWarning")
 @parametrize_with_checks(
     [make_model(name) for name in MODEL_NAMES],
     expected_failed_checks=lambda estimator: PU_EXPECTED_FAILED_CHECKS,

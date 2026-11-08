@@ -34,6 +34,7 @@ _MODELS: dict[str, str] = {
     "PUe": "pypu.models.pue",
     "PUHellingerForest": "pypu.models.hellinger",
     "PUHellingerTree": "pypu.models.hellinger",
+    "RankPruning": "pypu.models.rank_pruning",
     "RebalancedPU": "pypu.models.rebalancing",
     "SAREM": "pypu.models.sarem",
     "SpyPU": "pypu.models.two_step",
@@ -57,6 +58,7 @@ __all__ = [
     "PUHellingerTree",
     "PUe",
     "PropensityWeightedPU",
+    "RankPruning",
     "RebalancedPU",
     "SpyPU",
     "UPUBoost",
@@ -74,6 +76,7 @@ if TYPE_CHECKING:
     from pypu.models.naive import NaivePU
     from pypu.models.propensity_weighting import PropensityWeightedPU
     from pypu.models.pue import PUe
+    from pypu.models.rank_pruning import RankPruning
     from pypu.models.rebalancing import RebalancedPU
     from pypu.models.risk_boost import ImbalancedNNPUBoost, NNPUBoost, UPUBoost
     from pypu.models.sarem import SAREM

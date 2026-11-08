@@ -7,7 +7,7 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/pypu-learn?label=Python)](https://pypi.org/project/pypu-learn/)
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/izavits/PyPU/blob/main/LICENSE)
 
-> **Status: alpha.** Nineteen models, PU data generation, evaluation and class-prior estimation
+> **Status: alpha.** Twenty models, PU data generation, evaluation and class-prior estimation
 > are available; the API may still change before 1.0. More methods are planned: see the
 > [roadmap](https://github.com/izavits/PyPU/blob/main/ROADMAP.md).
 
@@ -221,6 +221,7 @@ flexible classifier (`estimator=`) can help BBE on non-linear data.
 | `BiasedSVM` | Liu et al.: an SVM on PU labels with class weights chosen by Lee and Liu's criterion | available |
 | `SpyPU` | Liu et al.: reliable negatives below hidden "spies", then a classifier, optionally refined by EM (S-EM) | available |
 | `PEBL` | Reliable negatives from spies or from 1-DNF (binary features), then an iterative SVM (Spy-SVM, PEBL) | available |
+| `RankPruning` | Northcutt et al.: estimates the label noise by confident counts, prunes the unlabeled samples that look positive, and refits with reweighted labeled samples | on main (0.6.0) |
 
 `IFPU`'s defaults are the settings of the original iFPU experiments (10 trees, learning rate
 0.1, focal `gamma=3`), and it reproduces their test scores exactly:
@@ -342,6 +343,17 @@ biased = BiasedSVM(random_state=0).fit(X_train, s_train)  # weight chosen by cro
 spy = SpyPU(n_em_iter=5, random_state=0).fit(X_train, s_train)  # spies, then S-EM
 pebl = PEBL(random_state=0).fit(X_train, s_train)  # spies, then an iterative SVM
 spy.reliable_negatives_  # which training samples were taken as negatives
+```
+
+`RankPruning` ("on main": not released yet, install from GitHub to try it) is the
+rankpruning package's PU learning mode, and gives its results to the last bit:
+
+```python
+from pypu.models import RankPruning
+
+clf = RankPruning(random_state=0).fit(X_train, s_train)
+clf.prior_, clf.pollution_  # estimated class prior and share of positives among the unlabeled
+clf.pruned_  # the unlabeled training samples it set aside as likely positives
 ```
 
 ## Contributing
