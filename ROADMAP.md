@@ -14,7 +14,7 @@ file tracks what is planned, where the code comes from, and what to watch for wh
 | 0.3.0 (released 2026-11-07) | Optional XGBoost extra: `UPUBoost`, `NNPUBoost`, `ImbalancedNNPUBoost`, the boosting PU risks of the Hellinger trees experiments. |
 | 0.4.0 (released 2026-11-07) | Optional PyTorch extra: `LBE`, `PUe`, `ALMPU`; the KM prior estimator (`KMPrior`, optional cvxopt extra). uPU and nnPU are covered by the boosting models of 0.3.0, so no network versions are planned. |
 | 0.5.0 (released 2026-11-08) | Classic methods of Bekker and Davis's survey, after the notebooks of github.com/hkiyomaru/pu-learning (MIT): `RebalancedPU` (Elkan's rebalancing), `PropensityWeightedPU` (risk minimization with a known propensity), `BiasedSVM`, `SpyPU` (spy two-step, optional S-EM refinement), `PEBL` (iterative SVM after spy or 1-DNF negatives). |
-| 0.6.0 | `RankPruning`, from the PU Hellinger trees code (the rankpruning package, MIT). |
+| 0.6.0 (released 2026-11-08) | `RankPruning`, from the PU Hellinger trees code (the rankpruning package, MIT). |
 | Later | Loaders for the benchmark datasets, a documentation site, a benchmark table comparing all methods. |
 
 ## Methods and their sources

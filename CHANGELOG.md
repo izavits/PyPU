@@ -9,6 +9,10 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-08
+
+Rank Pruning, which learns from the confident examples of PU data.
+
 ### Added
 
 - `pypu.models.RankPruning`: Rank Pruning (Northcutt et al.) in its PU learning mode. It
@@ -194,7 +198,8 @@ evaluation metrics (including estimates from PU labels alone) and class-prior es
 - `pypu.utils.check_pu_labels`, `pypu.utils.check_prior`, `pypu.utils.threshold_from_prior`
   and `pypu.show_versions()`.
 
-[Unreleased]: https://github.com/izavits/PyPU/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/izavits/PyPU/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/izavits/PyPU/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/izavits/PyPU/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/izavits/PyPU/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/izavits/PyPU/compare/v0.2.0...v0.3.0
