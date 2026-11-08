@@ -83,6 +83,20 @@ print("ROC AUC:", roc_auc_score(y_test, scores))
 print("Accuracy:", (clf.predict(X_test) == y_test).mean())
 ```
 
+## Examples
+
+The [examples folder](https://github.com/izavits/PyPU/tree/main/examples) has short,
+runnable scripts with figures:
+
+- **Getting started:** PU data and the naive baseline, the labeling mechanisms (SCAR and
+  SAR), estimating the class prior, and tuning a model from PU labels alone.
+- **One example per model**, each against a naive baseline, showing what the model learns
+  (spies, pruned samples, pseudo-labels, propensities, ...).
+- **A comparison** of all the models on a real dataset.
+
+They need matplotlib (`pip install matplotlib`). Each script is divided into `# %%` cells,
+so it also opens as a notebook in VS Code, PyCharm or Jupyter.
+
 ## PU data from labeled datasets
 
 `pypu.datasets` turns a fully labeled binary dataset into PU data, so methods can be compared

@@ -35,15 +35,16 @@ The version number is computed from git tags by hatch-vcs. An editable install w
 ## Running the checks
 
 ```bash
-pytest                       # tests
+pytest                       # tests, the examples included (they need matplotlib)
+pytest tests/test_examples.py   # only the examples
 pytest --cov                 # tests with a coverage report
 ruff check .                 # lint
 ruff format .                # format
 pre-commit run --all-files   # everything the git hook runs
 ```
 
-CI runs the linter and the tests on Linux, macOS and Windows for Python 3.11–3.14, and checks
-that the package builds.
+CI runs the linter and the tests on Linux, macOS and Windows for Python 3.11–3.14, runs the
+examples on Linux, and checks that the package builds.
 
 ## Project layout
 
@@ -56,6 +57,7 @@ src/pypu/
   prior/        class-prior estimation from PU data
   utils/        validation and shared helpers
 tests/          pytest suite; test_model_contract.py runs on every registered model
+examples/       sphinx-gallery scripts: getting_started/, models/ (one per model), comparison
 ```
 
 `pytest` also runs the examples in the docstrings, so keep their output exact. Print lists
@@ -84,8 +86,12 @@ scalars, whose repr differs between NumPy versions and platforms.
    `tests/test_model_contract.py` pick the model up automatically. When porting an existing
    implementation, add a regression test that compares against outputs saved from the
    original code.
-4. Add the model to the table in `README.md` and an entry under `## [Unreleased]` in
-   `CHANGELOG.md`.
+4. Add an example, `examples/models/plot_<name>.py`, in the style of the others: data, fit
+   against a naive baseline, what the model learned, a figure. List it in
+   `examples/README.rst` (a test checks that every script is listed), and add it to
+   `REQUIRES` in `tests/test_examples.py` if it needs an optional dependency.
+5. Add the model to the table in `README.md`, and to `examples/plot_compare_methods.py`, and
+   an entry under `## [Unreleased]` in `CHANGELOG.md`.
 
 ### Porting code from other projects
 

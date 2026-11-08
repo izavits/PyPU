@@ -9,6 +9,17 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+### Added
+
+- `examples/`: runnable examples with figures, in the sphinx-gallery format (Python scripts
+  divided into `# %%` cells, which also open as notebooks). Four getting-started examples
+  (PU data and the naive baseline, the labeling mechanisms, class-prior estimation, model
+  selection from PU labels), one example for each of the 20 models against a naive
+  baseline, and a comparison of all the models on scikit-learn's breast cancer data.
+- An `examples` dependency group (matplotlib), part of the `dev` group, and
+  `tests/test_examples.py`, which runs every example; CI runs it in a job of its own. The
+  sdist now includes the examples.
+
 ## [0.6.0] - 2026-11-08
 
 Rank Pruning, which learns from the confident examples of PU data.
