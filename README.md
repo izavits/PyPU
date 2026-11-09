@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/izavits/PyPU/main/docs/_static/logo.svg" alt="PyPU logo" width="140">
+</p>
+
 # PyPU
 
 **Positive-unlabeled (PU) learning in Python, with a scikit-learn style API.**

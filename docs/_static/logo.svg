@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>PyPU</title>
+  <!-- The letters P and U. The P holds a labeled positive; the U holds the unlabeled
+       samples: unknowns (gray) and a positive no one has labeled yet (orange ring). -->
+  <g fill="none" stroke="#3b82f6" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 54 V10 H18 A11 11 0 0 1 18 32 H8"/>
+    <path d="M34 10 V36 A10 10 0 0 0 54 36 V10"/>
+  </g>
+  <circle cx="18" cy="21" r="4.4" fill="#f59e0b"/>
+  <circle cx="41" cy="23" r="2.7" fill="#94a3b8"/>
+  <circle cx="47.5" cy="31" r="2.7" fill="#94a3b8"/>
+  <circle cx="41" cy="38.5" r="2.7" fill="#94a3b8"/>
+  <circle cx="46.5" cy="16.5" r="2.7" fill="none" stroke="#f59e0b" stroke-width="1.9"/>
+</svg>
