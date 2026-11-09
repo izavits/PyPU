@@ -67,11 +67,11 @@ class LBE(BasePUClassifier):
 
     Attributes
     ----------
-    coef_ : ndarray of shape (n_features_in_,)
+    coef_ : ndarray of shape (`n_features_in_`,)
         Weights of the classifier :math:`h`.
     intercept_ : float
         Intercept of the classifier :math:`h`.
-    propensity_coef_ : ndarray of shape (n_features_in_,)
+    propensity_coef_ : ndarray of shape (`n_features_in_`,)
         Weights of :math:`\eta`; as explained above, it is a classifier of labeled versus
         unlabeled samples.
     propensity_intercept_ : float
@@ -80,7 +80,7 @@ class LBE(BasePUClassifier):
         The class labels, always ``[0, 1]``.
     n_features_in_ : int
         Number of features seen during ``fit``.
-    feature_names_in_ : ndarray of shape (n_features_in_,)
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during ``fit``, when ``X`` has string feature names.
     threshold_ : float
         Positive-class probability threshold used by ``predict``, ``0.5``.

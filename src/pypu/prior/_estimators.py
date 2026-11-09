@@ -52,7 +52,7 @@ class ElkanNotoPrior(BasePriorEstimator):
         scenario it estimates the class prior of the unlabeled population.
     n_features_in_ : int
         Number of features seen during ``fit``.
-    feature_names_in_ : ndarray of shape (n_features_in_,)
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during ``fit``, when ``X`` has string feature names.
 
     See Also
@@ -152,7 +152,7 @@ class BBEPrior(BasePriorEstimator):
         scenario it estimates the class prior of the unlabeled population.
     n_features_in_ : int
         Number of features seen during ``fit``.
-    feature_names_in_ : ndarray of shape (n_features_in_,)
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during ``fit``, when ``X`` has string feature names.
 
     See Also
@@ -239,7 +239,7 @@ class KMPrior(BasePriorEstimator):
         unlabeled population.
     n_features_in_ : int
         Number of features seen during ``fit``.
-    feature_names_in_ : ndarray of shape (n_features_in_,)
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during ``fit``, when ``X`` has string feature names.
 
     See Also

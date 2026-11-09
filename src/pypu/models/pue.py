@@ -74,11 +74,11 @@ class PUe(BasePUClassifier):
     ----------
     prior_ : float
         The class prior used: ``prior``, or the KM1 estimate.
-    coef_ : ndarray of shape (n_features_in_,)
+    coef_ : ndarray of shape (`n_features_in_`,)
         Weights of the classifier :math:`f`.
     intercept_ : float
         Intercept of the classifier :math:`f`.
-    propensity_coef_ : ndarray of shape (n_features_in_,)
+    propensity_coef_ : ndarray of shape (`n_features_in_`,)
         Weights of the propensity model :math:`e`.
     propensity_intercept_ : float
         Intercept of the propensity model :math:`e`.
@@ -86,7 +86,7 @@ class PUe(BasePUClassifier):
         The class labels, always ``[0, 1]``.
     n_features_in_ : int
         Number of features seen during ``fit``.
-    feature_names_in_ : ndarray of shape (n_features_in_,)
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during ``fit``, when ``X`` has string feature names.
     threshold_ : float
         Positive-class probability threshold used by ``predict``, ``0.5``.

@@ -81,13 +81,13 @@ class SAREM(BasePUClassifier):
         The columns used by the propensity model.
     n_iter_ : int
         Number of EM iterations run.
-    log_likelihoods_ : ndarray of shape (n_iter_ + 1,)
+    log_likelihoods_ : ndarray of shape (`n_iter_` + 1,)
         Expected log-likelihood per sample after the initialization and after each iteration.
     classes_ : ndarray of shape (2,)
         The class labels, always ``[0, 1]``.
     n_features_in_ : int
         Number of features seen during ``fit``.
-    feature_names_in_ : ndarray of shape (n_features_in_,)
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during ``fit``, when ``X`` has string feature names.
     threshold_ : float
         Positive-class probability threshold used by ``predict``, ``0.5``.

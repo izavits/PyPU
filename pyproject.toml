@@ -67,9 +67,21 @@ test = [
 examples = [
     "matplotlib>=3.8",  # the figures of examples/; tests/test_examples.py runs them
 ]
+# The documentation site (docs/). Running every example also needs the extras:
+# pip install -e ".[torch,xgboost,cvxopt]" --group docs
+docs = [
+    { include-group = "examples" },
+    "sphinx>=9",
+    "pydata-sphinx-theme>=0.16",
+    "sphinx-gallery>=0.19",
+    "numpydoc>=1.8",
+    "myst-parser>=4",
+    "sphinx-copybutton>=0.5",
+    "sphinx-autobuild>=2024.10",  # live preview: sphinx-autobuild docs docs/_build/html
+]
 dev = [
     { include-group = "test" },
-    { include-group = "examples" },
+    { include-group = "docs" },
     "ruff>=0.17",
     "pre-commit>=4",
     "build>=1.2",

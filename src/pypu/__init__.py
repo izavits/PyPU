@@ -10,6 +10,12 @@ Subpackages
 -----------
 models
     The PU classifiers, e.g. ``from pypu.models import NaivePU``.
+datasets
+    PU data from fully labeled datasets, under several labeling mechanisms.
+metrics
+    Evaluation with the true labels, and estimates from PU labels alone.
+prior
+    Class-prior estimation from PU data.
 utils
     Input validation and helpers shared by the models.
 """

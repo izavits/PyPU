@@ -78,7 +78,7 @@ class SpyPU(BasePUClassifier):
         The class labels, always ``[0, 1]``.
     n_features_in_ : int
         Number of features seen during ``fit``.
-    feature_names_in_ : ndarray of shape (n_features_in_,)
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during ``fit``, when ``X`` has string feature names.
     threshold_ : float
         Positive-class probability threshold used by ``predict``, ``0.5``.
@@ -273,13 +273,13 @@ class PEBL(BasePUClassifier):
         Which training samples are reliable negatives after step 1.
     spies_ : ndarray of int
         With ``negatives="spy"``, the indices of the spies.
-    positive_features_ : ndarray of bool of shape (n_features_in_,)
+    positive_features_ : ndarray of bool of shape (`n_features_in_`,)
         With ``negatives="1dnf"``, which features are positive features.
     classes_ : ndarray of shape (2,)
         The class labels, always ``[0, 1]``.
     n_features_in_ : int
         Number of features seen during ``fit``.
-    feature_names_in_ : ndarray of shape (n_features_in_,)
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during ``fit``, when ``X`` has string feature names.
     threshold_ : float
         Positive-class probability threshold used by ``predict``, ``0.5``.

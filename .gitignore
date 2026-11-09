@@ -27,8 +27,11 @@ env/
 coverage.xml
 htmlcov/
 
-# Docs build
+# Docs build, and the pages Sphinx generates (examples gallery, API pages)
 docs/_build/
+docs/auto_examples/
+docs/api/generated/
+docs/sg_execution_times.rst
 site/
 
 # Jupyter

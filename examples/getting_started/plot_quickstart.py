@@ -126,4 +126,5 @@ plt.show()
 # - The other getting-started examples show the labeling mechanisms, how to estimate the
 #   class prior, and how to tune a model without true labels.
 # - The examples in ``examples/models`` show each model of :mod:`pypu.models` on data like
-#   these, and ``examples/plot_compare_methods.py`` compares them all on a real dataset.
+#   these, and ``examples/comparison/plot_compare_methods.py`` compares them all on a real
+#   dataset.

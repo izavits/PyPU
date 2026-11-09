@@ -69,9 +69,8 @@ def make_pu_split(
         True labels: 1 for positive, 0 for negative.
     label_frequency : float, default=0.5
         Fraction of the training positives to label, :math:`c = P(s = 1 \mid y = 1)`.
-    mechanism : {"scar", "sar_knn", "sar_propensity", "sar_cluster", "sar_confidence"}, \
-            default="scar"
-        Labeling mechanism: :func:`label_scar`, :func:`label_sar_knn`,
+    mechanism : {"scar", "sar_knn", "sar_propensity", "sar_cluster", "sar_confidence"}
+        Labeling mechanism, ``"scar"`` by default: :func:`label_scar`, :func:`label_sar_knn`,
         :func:`label_sar_propensity`, :func:`label_sar_cluster` or
         :func:`label_sar_confidence`.
     test_size : float or int, default=0.25

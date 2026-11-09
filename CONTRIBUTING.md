@@ -57,7 +57,7 @@ src/pypu/
   prior/        class-prior estimation from PU data
   utils/        validation and shared helpers
 tests/          pytest suite; test_model_contract.py runs on every registered model
-examples/       sphinx-gallery scripts: getting_started/, models/ (one per model), comparison
+examples/       sphinx-gallery scripts: getting_started/, models/ (one per model), comparison/
 ```
 
 `pytest` also runs the examples in the docstrings, so keep their output exact. Print lists
@@ -90,8 +90,9 @@ scalars, whose repr differs between NumPy versions and platforms.
    against a naive baseline, what the model learned, a figure. List it in
    `examples/README.rst` (a test checks that every script is listed), and add it to
    `REQUIRES` in `tests/test_examples.py` if it needs an optional dependency.
-5. Add the model to the table in `README.md`, and to `examples/plot_compare_methods.py`, and
-   an entry under `## [Unreleased]` in `CHANGELOG.md`.
+5. Add the model to the table in `README.md`, and to
+   `examples/comparison/plot_compare_methods.py`, and an entry under `## [Unreleased]` in
+   `CHANGELOG.md`.
 
 ### Porting code from other projects
 

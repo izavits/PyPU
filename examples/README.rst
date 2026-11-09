@@ -44,4 +44,4 @@ One example per model in ``models/``:
 Comparison
 ----------
 
-- ``plot_compare_methods.py``: every model on the breast cancer dataset.
+- ``comparison/plot_compare_methods.py``: every model on the breast cancer dataset.
