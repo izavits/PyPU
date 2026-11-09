@@ -7,6 +7,7 @@
 **Positive-unlabeled (PU) learning in Python, with a scikit-learn style API.**
 
 [![CI](https://github.com/izavits/PyPU/actions/workflows/ci.yml/badge.svg)](https://github.com/izavits/PyPU/actions/workflows/ci.yml)
+[![Documentation](https://app.readthedocs.org/projects/pypu/badge/?version=latest)](https://pypu.readthedocs.io)
 [![PyPI](https://img.shields.io/pypi/v/pypu-learn?label=PyPI)](https://pypi.org/project/pypu-learn/)
 [![Python versions](https://img.shields.io/pypi/pyversions/pypu-learn?label=Python)](https://pypi.org/project/pypu-learn/)
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/izavits/PyPU/blob/main/LICENSE)
@@ -23,6 +24,11 @@ misstatements, clicked items.
 PyPU collects PU learning methods behind one interface, in the spirit of
 [PyOD](https://github.com/yzhao062/pyod) for outlier detection: import a model, `fit` it on
 PU data, and predict on new data.
+
+**Documentation: [pypu.readthedocs.io](https://pypu.readthedocs.io)**, with a
+[user guide](https://pypu.readthedocs.io/page/user_guide/index.html), the
+[examples](https://pypu.readthedocs.io/page/auto_examples/index.html) with their figures,
+and the [API reference](https://pypu.readthedocs.io/page/api/index.html).
 
 ## Installation
 
@@ -89,8 +95,9 @@ print("Accuracy:", (clf.predict(X_test) == y_test).mean())
 
 ## Examples
 
-The [examples folder](https://github.com/izavits/PyPU/tree/main/examples) has short,
-runnable scripts with figures:
+The [examples gallery](https://pypu.readthedocs.io/page/auto_examples/index.html) shows
+short, runnable scripts with their figures and output; the scripts are in the
+[examples folder](https://github.com/izavits/PyPU/tree/main/examples):
 
 - **Getting started:** PU data and the naive baseline, the labeling mechanisms (SCAR and
   SAR), estimating the class prior, and tuning a model from PU labels alone.
@@ -378,7 +385,8 @@ clf.pruned_  # the unlabeled training samples it set aside as likely positives
 
 Contributions are welcome. See
 [CONTRIBUTING.md](https://github.com/izavits/PyPU/blob/main/CONTRIBUTING.md) for the
-development setup, how to add a model, and the release process. Changes are listed in
+development setup, how to add a model, how to build the documentation, and the release
+process. Changes are listed in
 [CHANGELOG.md](https://github.com/izavits/PyPU/blob/main/CHANGELOG.md).
 
 ## Citing

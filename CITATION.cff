@@ -6,6 +6,7 @@ authors:
   - given-names: Ilias
     family-names: Zavitsanos
 repository-code: "https://github.com/izavits/PyPU"
+url: "https://pypu.readthedocs.io"
 license: BSD-3-Clause
 keywords:
   - positive-unlabeled learning

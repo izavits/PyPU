@@ -16,7 +16,8 @@ file tracks what is planned, where the code comes from, and what to watch for wh
 | 0.5.0 (released 2026-11-08) | Classic methods of Bekker and Davis's survey, after the notebooks of github.com/hkiyomaru/pu-learning (MIT): `RebalancedPU` (Elkan's rebalancing), `PropensityWeightedPU` (risk minimization with a known propensity), `BiasedSVM`, `SpyPU` (spy two-step, optional S-EM refinement), `PEBL` (iterative SVM after spy or 1-DNF negatives). |
 | 0.6.0 (released 2026-11-08) | `RankPruning`, from the PU Hellinger trees code (the rankpruning package, MIT). |
 | 0.6.1 (released 2026-11-08) | `examples/`: getting-started examples, one example per model, and a comparison of all the models on one dataset. |
-| Later | Loaders for the benchmark datasets, a documentation site (the examples are already in the sphinx-gallery format), a benchmark table comparing all methods on many datasets. |
+| 0.6.2 (released 2026-11-09) | The documentation site, [pypu.readthedocs.io](https://pypu.readthedocs.io): a user guide, the examples gallery and the API reference, built by Read the Docs. |
+| Later | Loaders for the benchmark datasets, a benchmark table comparing all methods on many datasets. |
 
 ## Methods and their sources
 

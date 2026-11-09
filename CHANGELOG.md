@@ -9,6 +9,37 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-11-09
+
+A documentation site, [pypu.readthedocs.io](https://pypu.readthedocs.io); the library
+itself is unchanged.
+
+### Added
+
+- The documentation site, built by Read the Docs from `docs/`: installation, a user guide
+  (PU learning, making PU data, choosing a model, class-prior estimation, evaluation and
+  model selection, implementation notes), the examples gallery, with every example run and
+  downloadable as a script or a notebook, and an API reference that lists the examples
+  using each object. Each release gets its own version of the documentation.
+- A `docs` dependency group (Sphinx, pydata-sphinx-theme, sphinx-gallery, numpydoc, MyST),
+  part of the `dev` group. A CI job builds the documentation on every push, with warnings
+  as errors.
+- `tests/test_user_guide.py`, which runs the code of the user guide and checks its output,
+  and `tests/test_docs.py`, which checks that the API reference lists the whole public API.
+- A logo, in the documentation and the README, and a social preview card for the
+  repository.
+- A Documentation link on the PyPI page and in `CITATION.cff`.
+
+### Changed
+
+- `examples/plot_compare_methods.py` moved to `examples/comparison/`, so that the gallery
+  shows it after the getting-started and model examples; the gallery's section headers are
+  now `GALLERY_HEADER.rst` files.
+- Docstring fixes for the API reference: shapes such as `(n_features_in_,)` quote the
+  name, `make_pu_split`'s `mechanism` type fits on one line, and the package docstring
+  lists all five subpackages.
+- The sdist includes `docs/`.
+
 ## [0.6.1] - 2026-11-08
 
 Runnable examples for every model; the library itself is unchanged.
@@ -213,7 +244,8 @@ evaluation metrics (including estimates from PU labels alone) and class-prior es
 - `pypu.utils.check_pu_labels`, `pypu.utils.check_prior`, `pypu.utils.threshold_from_prior`
   and `pypu.show_versions()`.
 
-[Unreleased]: https://github.com/izavits/PyPU/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/izavits/PyPU/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/izavits/PyPU/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/izavits/PyPU/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/izavits/PyPU/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/izavits/PyPU/compare/v0.4.0...v0.5.0

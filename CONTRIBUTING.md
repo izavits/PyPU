@@ -44,7 +44,37 @@ pre-commit run --all-files   # everything the git hook runs
 ```
 
 CI runs the linter and the tests on Linux, macOS and Windows for Python 3.11–3.14, runs the
-examples on Linux, and checks that the package builds.
+examples and builds the documentation on Linux, and checks that the package builds.
+
+## Building the documentation
+
+The documentation site, [pypu.readthedocs.io](https://pypu.readthedocs.io), is built with
+Sphinx from `docs/`. The `dev` group installs the documentation tools and every optional
+library, so that all the examples run:
+
+```bash
+sphinx-build -b html docs docs/_build/html                     # runs every example (~2 min)
+sphinx-build -b html -D plot_gallery=0 docs docs/_build/html   # quick: skips the examples
+sphinx-autobuild -D plot_gallery=0 docs docs/_build/html       # live preview while editing
+```
+
+Then open `docs/_build/html/index.html` (or http://127.0.0.1:8000 for the live preview).
+CI and Read the Docs treat warnings as errors, so check with `-W --keep-going` before
+pushing.
+
+- The pages are MyST Markdown. The user guide's code is in ```` ```pycon ```` blocks
+  written as doctests: `tests/test_user_guide.py` runs each page and checks the output, so
+  print rounded values or Python scalars, as in the docstrings. A page whose code needs an
+  optional module starts with a comment such as `% test-requires: cvxopt`.
+- `docs/api/index.rst` lists the public API; a test checks that it names every public
+  object and nothing else.
+- The docstrings are rendered by numpydoc. In a type, quote a name that ends with an
+  underscore, as in ``ndarray of shape (`n_features_in_`,)``: otherwise reStructuredText
+  reads it as a link.
+- The examples gallery is built from `examples/`; its order follows `examples/README.rst`.
+
+Read the Docs builds `latest` from every push to `main`, and a version of the
+documentation for every release tag.
 
 ## Project layout
 
@@ -58,6 +88,7 @@ src/pypu/
   utils/        validation and shared helpers
 tests/          pytest suite; test_model_contract.py runs on every registered model
 examples/       sphinx-gallery scripts: getting_started/, models/ (one per model), comparison/
+docs/           the documentation site: user guide, API reference, examples gallery
 ```
 
 `pytest` also runs the examples in the docstrings, so keep their output exact. Print lists
@@ -90,7 +121,11 @@ scalars, whose repr differs between NumPy versions and platforms.
    against a naive baseline, what the model learned, a figure. List it in
    `examples/README.rst` (a test checks that every script is listed), and add it to
    `REQUIRES` in `tests/test_examples.py` if it needs an optional dependency.
-5. Add the model to the table in `README.md`, and to
+5. Add the model to the API reference, in its family's section of `docs/api/index.rst` (a
+   test checks that every model is listed), and to the user guide's
+   `docs/user_guide/models.md`: the table of all the models, and the lists of which models
+   need the prior.
+6. Add the model to the table in `README.md`, and to
    `examples/comparison/plot_compare_methods.py`, and an entry under `## [Unreleased]` in
    `CHANGELOG.md`.
 
@@ -126,7 +161,8 @@ Version numbers come from git tags, so there is no version string to edit. To re
 
 The `Release` workflow then checks that the changelog has a section for the version, builds
 the sdist and the wheel, publishes them to TestPyPI and then to PyPI, and creates a GitHub
-release whose notes are that changelog section.
+release whose notes are that changelog section. Read the Docs builds the documentation of
+the tag, and its `stable` version moves to the new release.
 
 Pre-release tags (`vX.Y.ZrcN`, `vX.Y.ZaN`, `vX.Y.ZbN`, `vX.Y.Z.devN`) are published to
 TestPyPI only, so you can try a release without touching PyPI. To install one, take the

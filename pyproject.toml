@@ -50,6 +50,7 @@ cvxopt = ["cvxopt>=1.3"]
 
 [project.urls]
 Homepage = "https://github.com/izavits/PyPU"
+Documentation = "https://pypu.readthedocs.io"
 Repository = "https://github.com/izavits/PyPU"
 Issues = "https://github.com/izavits/PyPU/issues"
 Changelog = "https://github.com/izavits/PyPU/blob/main/CHANGELOG.md"
