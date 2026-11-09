@@ -45,6 +45,10 @@ default_role = "code"
 myst_enable_extensions = ["colon_fence", "deflist", "dollarmath"]
 myst_heading_anchors = 3
 
+# Copy code without the ">>> " and "... " prompts of the doctest-style blocks.
+copybutton_prompt_text = r">>> |\.\.\. "
+copybutton_prompt_is_regexp = True
+
 # ---------------------------------------------------------------- API reference
 
 autosummary_generate = True
@@ -125,8 +129,8 @@ html_theme_options = {
             "icon": "fa-brands fa-python",
         },
     ],
-    # Installation, Examples, API reference, Changelog; the rest under "More".
-    "header_links_before_dropdown": 4,
+    # Installation, User guide, Examples, API reference, Changelog; the rest under "More".
+    "header_links_before_dropdown": 5,
     "navigation_with_keys": False,
     "show_toc_level": 2,
     "secondary_sidebar_items": ["page-toc", "sourcelink"],
