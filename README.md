@@ -7,7 +7,7 @@
 **Positive-unlabeled (PU) learning in Python, with a scikit-learn style API.**
 
 [![CI](https://github.com/izavits/PyPU/actions/workflows/ci.yml/badge.svg)](https://github.com/izavits/PyPU/actions/workflows/ci.yml)
-[![Documentation](https://app.readthedocs.org/projects/pypu/badge/?version=latest)](https://pypu.readthedocs.io)
+[![Documentation](https://img.shields.io/readthedocs/pypu?label=Docs)](https://pypu.readthedocs.io)
 [![PyPI](https://img.shields.io/pypi/v/pypu-learn?label=PyPI)](https://pypi.org/project/pypu-learn/)
 [![Python versions](https://img.shields.io/pypi/pyversions/pypu-learn?label=Python)](https://pypi.org/project/pypu-learn/)
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/izavits/PyPU/blob/main/LICENSE)
