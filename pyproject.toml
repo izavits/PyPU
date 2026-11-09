@@ -106,6 +106,7 @@ include = [
     "src/pypu",
     "tests",
     "examples",
+    "docs",
     "README.md",
     "CHANGELOG.md",
     "CITATION.cff",
