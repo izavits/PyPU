@@ -9,6 +9,11 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-20
+
+IFPNU's first-step detectors by name, and ports of the extended isolation forest and
+OptIForest in the new `pypu.anomaly`.
+
 ### Added
 
 - `IFPNU`'s `detector` also takes a name, in any case, which picks a detector with the
@@ -274,7 +279,8 @@ evaluation metrics (including estimates from PU labels alone) and class-prior es
 - `pypu.utils.check_pu_labels`, `pypu.utils.check_prior`, `pypu.utils.threshold_from_prior`
   and `pypu.show_versions()`.
 
-[Unreleased]: https://github.com/izavits/PyPU/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/izavits/PyPU/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/izavits/PyPU/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/izavits/PyPU/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/izavits/PyPU/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/izavits/PyPU/compare/v0.5.0...v0.6.0

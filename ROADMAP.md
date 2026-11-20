@@ -17,6 +17,7 @@ file tracks what is planned, where the code comes from, and what to watch for wh
 | 0.6.0 (released 2026-11-08) | `RankPruning`, from the PU Hellinger trees code (the rankpruning package, MIT). |
 | 0.6.1 (released 2026-11-08) | `examples/`: getting-started examples, one example per model, and a comparison of all the models on one dataset. |
 | 0.6.2 (released 2026-11-09) | The documentation site, [pypu.readthedocs.io](https://pypu.readthedocs.io): a user guide, the examples gallery and the API reference, built by Read the Docs. |
+| 0.7.0 (released 2026-11-20) | `IFPNU`'s first-step detector by name (`"IF"`, `"EIF"`, `"OIF"`, `"LOF"`, `"DIF"`); `pypu.anomaly` with `ExtendedIsolationForest` (eif) and `OptIForest`, ported from the detectors of the iFPNU experiments; optional PyOD extra (porting note 14). |
 | Later | Loaders for the benchmark datasets, a benchmark table comparing all methods on many datasets. |
 
 ## Methods and their sources
