@@ -9,6 +9,11 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+### Added
+
+- `IFPU`'s docstring and the README cite the iFPU paper: E. Zavitsanos and G. Paliouras,
+  "Focused PU learning from imbalanced data", Data Mining and Knowledge Discovery, 2026.
+
 ## [0.6.2] - 2026-11-09
 
 A documentation site, [pypu.readthedocs.io](https://pypu.readthedocs.io); the library

@@ -149,7 +149,7 @@ class _FocalBoostingClassifier(BasePUClassifier):
 class IFPU(_FocalBoostingClassifier):
     r"""Gradient boosting with a focal-loss objective for PU data.
 
-    IFPU trains LightGBM trees on a custom objective built from the focal loss
+    IFPU [1]_ trains LightGBM trees on a custom objective built from the focal loss
     :math:`\ell_\gamma`, which down-weights samples the model already classifies well, so
     that training concentrates on the hard ones. Each labeled positive contributes
     :math:`\ell_\gamma^+(x)`, the focal loss of the positive class. Each unlabeled sample is
@@ -208,6 +208,12 @@ class IFPU(_FocalBoostingClassifier):
     ``predict_proba(X)[:, 1]``. The scores rank well but are not calibrated probabilities,
     so a threshold derived from the prior, as in :func:`pypu.metrics.f1_at_prior`, can suit
     better than ``predict``'s ``0.5``.
+
+    References
+    ----------
+    .. [1] E. Zavitsanos and G. Paliouras. "Focused PU learning from imbalanced data."
+       Data Mining and Knowledge Discovery, 40:101, 2026.
+       https://doi.org/10.1007/s10618-026-01264-1
 
     Examples
     --------

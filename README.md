@@ -229,7 +229,7 @@ flexible classifier (`estimator=`) can help BBE on non-linear data.
 | Model | Description | Status |
 | --- | --- | --- |
 | `NaivePU` | Treats unlabeled samples as negatives; the usual lower bound | available |
-| `IFPU` | LightGBM with a focal-loss objective that treats unlabeled samples as positive with probability `prior` | available |
+| `IFPU` | Zavitsanos and Paliouras: LightGBM with a focal-loss objective that treats unlabeled samples as positive with probability `prior` | available |
 | `IFPNU` | An anomaly detector picks reliable negatives, then LightGBM with a focal loss that weights positives, reliable negatives and the remaining unlabeled samples | available |
 | `SAREM` | Bekker et al.: EM that learns the classifier together with the propensity, the probability that a positive gets labeled (SAR) | available |
 | `ElkanNoto` | Elkan and Noto: a labeled-vs-unlabeled classifier corrected by the label frequency, or retrained on weighted unlabeled samples | available |
@@ -248,7 +248,9 @@ flexible classifier (`estimator=`) can help BBE on non-linear data.
 | `PEBL` | Reliable negatives from spies or from 1-DNF (binary features), then an iterative SVM (Spy-SVM, PEBL) | available |
 | `RankPruning` | Northcutt et al.: estimates the label noise by confident counts, prunes the unlabeled samples that look positive, and refits with reweighted labeled samples | available |
 
-`IFPU`'s defaults are the settings of the original iFPU experiments (10 trees, learning rate
+`IFPU` is the method of Zavitsanos and Paliouras
+([Data Mining and Knowledge Discovery, 2026](https://doi.org/10.1007/s10618-026-01264-1)).
+Its defaults are the settings of the original iFPU experiments (10 trees, learning rate
 0.1, focal `gamma=3`), and it reproduces their test scores exactly:
 
 ```python

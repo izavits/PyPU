@@ -130,8 +130,10 @@ trees ran both with linear SVMs.
      of `CSVDataset.get_splits`, then `IFPU`) reproduces every saved `scores_*.npz` in
      `iFPNU/output/*_iFPU_lgb` exactly. `tests/models/data/ifpu_reference.npz` holds outputs
      of the original code on synthetic data for the test suite.
-   - TODO: add the iFPU and iFPNU papers' references to the docstrings and the README once
-     available.
+   - The iFPU paper (Zavitsanos and Paliouras, Data Mining and Knowledge Discovery 40:101,
+     2026, https://doi.org/10.1007/s10618-026-01264-1) is cited in `IFPU`'s docstring and
+     the README.
+   - TODO: add the iFPNU paper's reference to the docstrings and the README once available.
 3. **Hellinger trees (resolved).** The Cython code is a fork of scikit-learn 1.0.2's tree
    internals: it imports `numpy.math` (removed in NumPy 2) and private scikit-learn modules,
    and only builds under Python 3.8. `PUHellingerTree` and `PUHellingerForest` rewrite it in
