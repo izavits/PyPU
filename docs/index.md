@@ -67,8 +67,8 @@ Models that need the class prior π = P(y = 1) take it as a `prior` parameter.
 - [Installation](install.md): the optional extras and platform notes.
 - [User guide](user_guide/index.md): PU learning, and how to do it with PyPU.
 - [Examples](auto_examples/index.rst): runnable examples with figures, one per model.
-- [API reference](api/index.rst): every model, dataset function, metric and prior
-  estimator.
+- [API reference](api/index.rst): every model, dataset function, metric, prior estimator
+  and anomaly detector.
 
 ```{toctree}
 :hidden:

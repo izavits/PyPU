@@ -16,6 +16,8 @@ metrics
     Evaluation with the true labels, and estimates from PU labels alone.
 prior
     Class-prior estimation from PU data.
+anomaly
+    Unsupervised anomaly detectors for the first step of ``IFPNU``.
 utils
     Input validation and helpers shared by the models.
 """

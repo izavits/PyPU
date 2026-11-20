@@ -48,7 +48,9 @@ def test_models_are_imported_lazily():
     assert result.stdout.strip() == "False"
 
 
-@pytest.mark.parametrize("module_name", ["pypu.datasets", "pypu.metrics", "pypu.prior"])
+@pytest.mark.parametrize(
+    "module_name", ["pypu.datasets", "pypu.metrics", "pypu.prior", "pypu.anomaly"]
+)
 def test_public_functions_are_documented(module_name):
     module = importlib.import_module(module_name)
     for name in module.__all__:

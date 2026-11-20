@@ -11,8 +11,33 @@ the public API may change between minor versions; such changes are always listed
 
 ### Added
 
+- `IFPNU`'s `detector` also takes a name, in any case, which picks a detector with the
+  settings of the original experiments: `"IF"` (scikit-learn's `IsolationForest`, the
+  default as before), `"EIF"` (`ExtendedIsolationForest`), `"OIF"` (`OptIForest`), `"LOF"`
+  (scikit-learn's `LocalOutlierFactor`) and `"DIF"` (PyOD's deep isolation forest). Every
+  detector keeps the `floor(prior * n)` most anomalous samples as candidate positives.
+- `pypu.anomaly`, anomaly detectors that follow scikit-learn's outlier detectors (`fit`,
+  then `score_samples`, the lower the more abnormal), ported from the code of the detectors
+  that the iFPNU experiments used:
+  - `ExtendedIsolationForest`, the extended isolation forest of Hariri, Carrasco Kind and
+    Brunner, a NumPy port of their `eif` package (2.0.2), which no longer installs. From the
+    same seed it gives the scores of the package's pure-Python version exactly, and its
+    scores agree with those of the C++ version as closely as two runs of that version do.
+  - `OptIForest`, the optimal isolation forest of Xiang et al., ported from the authors'
+    code, whose scores it gives exactly from the same NumPy seed. All three hash families
+    are included (`lsh_family="L2OPT"`, `"L1OPT"` or `"ALOPT"`).
+- A `pyod` extra, `pip install "pypu-learn[pyod]"`, with PyOD 3.5.1 or newer (earlier
+  versions stored training scores for DIF that differ from its `decision_function`) and
+  PyTorch, for `detector="DIF"`.
 - `IFPU`'s docstring and the README cite the iFPU paper: E. Zavitsanos and G. Paliouras,
   "Focused PU learning from imbalanced data", Data Mining and Knowledge Discovery, 2026.
+
+### Changed
+
+- `IFPNU`'s `detector` defaults to `"IF"` instead of `None`; `None` still selects the same
+  detector.
+- `IFPNU` fits a detector on one PyTorch thread when PyTorch is loaded: on macOS, PyTorch on
+  several threads next to LightGBM can hang the process.
 
 ## [0.6.2] - 2026-11-09
 

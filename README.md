@@ -43,13 +43,15 @@ On macOS, the LightGBM-based models need the OpenMP runtime, which LightGBM's wh
 include: `brew install libomp`.
 
 The XGBoost-based models (`UPUBoost`, `NNPUBoost`, `ImbalancedNNPUBoost`), the
-PyTorch-based models (`LBE`, `PUe`, `ALMPU`) and the KM estimator of the class prior (`KMPrior`, also
-used by `PUe` when no prior is given) need optional extras:
+PyTorch-based models (`LBE`, `PUe`, `ALMPU`), the KM estimator of the class prior (`KMPrior`, also
+used by `PUe` when no prior is given) and PyOD's deep isolation forest as the first step of
+`IFPNU` (`detector="DIF"`) need optional extras:
 
 ```bash
 pip install "pypu-learn[xgboost]"
 pip install "pypu-learn[torch]"
 pip install "pypu-learn[cvxopt]"
+pip install "pypu-learn[pyod]"
 ```
 
 The `cvxopt` extra installs [CVXOPT](https://cvxopt.org), which is licensed under the GPL-3.0;
@@ -58,8 +60,8 @@ PyPU itself stays under the BSD 3-Clause License.
 On Linux, PyPI's PyTorch wheels include CUDA; for the smaller CPU build, install PyTorch
 first as described on [pytorch.org](https://pytorch.org). On macOS, PyTorch bundles its own
 OpenMP runtime, which conflicts with the one LightGBM uses: PyPU loads LightGBM first and
-runs its PyTorch models on one thread, so they work together, but importing `torch` yourself
-before using a LightGBM-based model can crash LightGBM.
+runs its PyTorch models and detectors on one thread, so they work together, but importing
+`torch` yourself before using a LightGBM-based model can crash LightGBM.
 
 To try features that are not released yet, install from GitHub:
 
@@ -260,14 +262,26 @@ clf = IFPU(prior=0.2).fit(X_train, s_train)  # prior: fraction of positives in t
 ```
 
 `IFPNU`'s defaults are those of the original iFPNU experiments (100 trees), and from the
-same anomaly scores it reproduces the original code exactly. Its first step uses
-scikit-learn's `IsolationForest` unless given another detector, such as any PyOD detector:
+same anomaly scores it reproduces the original code exactly. Its first step's `detector`
+takes a name, for a detector with the settings of the experiments, or any scikit-learn or
+PyOD outlier detector:
+
+- `"IF"` (the default): scikit-learn's `IsolationForest`;
+- `"EIF"`: the extended isolation forest, `pypu.anomaly.ExtendedIsolationForest`;
+- `"OIF"`: OptIForest, `pypu.anomaly.OptIForest`;
+- `"LOF"`: scikit-learn's `LocalOutlierFactor`;
+- `"DIF"`: PyOD's deep isolation forest (`pip install "pypu-learn[pyod]"`).
+
+The experiments used DIF, EIF and OptIForest. No maintained package provides the last two,
+so `pypu.anomaly` ports the authors' code.
 
 ```python
 from pypu.models import IFPNU
 
 clf = IFPNU(prior=0.2, random_state=0).fit(X_train, s_train)
 clf.pnu_labels_  # 1: labeled positive, 0: reliable negative, -1: left unlabeled
+
+clf = IFPNU(prior=0.2, detector="OIF", random_state=0).fit(X_train, s_train)
 ```
 
 `SAREM` needs no prior. It works best when the propensity is restricted to the features

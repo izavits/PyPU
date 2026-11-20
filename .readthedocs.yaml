@@ -28,6 +28,7 @@ python:
         - xgboost
         - torch
         - cvxopt
+        - pyod
 
 sphinx:
   configuration: docs/conf.py

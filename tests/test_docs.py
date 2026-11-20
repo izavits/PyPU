@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 
 API_INDEX = Path(__file__).parents[1] / "docs" / "api" / "index.rst"
-SUBPACKAGES = ["models", "datasets", "metrics", "prior", "utils"]
+SUBPACKAGES = ["models", "datasets", "metrics", "prior", "anomaly", "utils"]
 
 
 def documented_names():

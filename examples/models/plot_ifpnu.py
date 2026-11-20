@@ -13,8 +13,11 @@ before training, assuming that positives are rare and look anomalous:
    negatives and the remaining unlabeled samples; ``eta`` sets how much the reliable
    negatives count against the unlabeled samples.
 
-Any detector with ``score_samples`` works, and so do the detectors of PyOD. Its defaults
-are the settings of the original iFPNU experiments (100 trees). It needs the class prior.
+``detector`` also takes the name of one of the experiments' detectors, such as ``"EIF"``
+(:class:`~pypu.anomaly.ExtendedIsolationForest`) or ``"OIF"``
+(:class:`~pypu.anomaly.OptIForest`), or any detector with ``score_samples`` or from PyOD.
+Its defaults are the settings of the original iFPNU experiments (100 trees). It needs the
+class prior.
 """
 
 # %%

@@ -3,12 +3,19 @@
 from __future__ import annotations
 
 import numbers
+import sys
+import warnings
 
 import numpy as np
 from sklearn.base import clone
 from sklearn.ensemble import IsolationForest
+from sklearn.neighbors import LocalOutlierFactor
 
+from pypu.anomaly import ExtendedIsolationForest, OptIForest
 from pypu.models.ifpu import _focal_grad, _focal_hess, _FocalBoostingClassifier
+
+# Names accepted by IFPNU's ``detector``, in any case.
+_DETECTOR_NAMES = ("IF", "EIF", "OIF", "LOF", "DIF")
 
 
 class _FocalPNUObjective:
@@ -84,14 +91,27 @@ class IFPNU(_FocalBoostingClassifier):
     prior : float
         Class prior :math:`\pi = P(y = 1)` of the training data, in ``(0, 1)``. Required;
         the default ``None`` raises an error in ``fit``.
-    detector : estimator, default=None
-        Unsupervised anomaly detector, cloned and fitted on all the training samples. A PyOD
-        detector gives its training scores ``decision_scores_``; a scikit-learn one gives
-        ``negative_outlier_factor_`` (:class:`~sklearn.neighbors.LocalOutlierFactor`) or
-        ``score_samples`` (such as :class:`~sklearn.ensemble.IsolationForest` or
-        :class:`~sklearn.svm.OneClassSVM`), negated so that higher means more anomalous.
-        ``None`` uses :class:`~sklearn.ensemble.IsolationForest` seeded with
-        ``random_state``.
+    detector : {"IF", "EIF", "OIF", "LOF", "DIF"} or estimator, default="IF"
+        Unsupervised anomaly detector of the first step, fitted on all the training samples.
+        A name, in any case, picks a detector with the settings of the original experiments:
+
+        - ``"IF"``: scikit-learn's :class:`~sklearn.ensemble.IsolationForest`, seeded with
+          ``random_state``.
+        - ``"EIF"``: the extended isolation forest,
+          :class:`~pypu.anomaly.ExtendedIsolationForest`, seeded with ``random_state``.
+        - ``"OIF"``: OptIForest, :class:`~pypu.anomaly.OptIForest`, seeded with
+          ``random_state``.
+        - ``"LOF"``: scikit-learn's :class:`~sklearn.neighbors.LocalOutlierFactor`, with 20
+          neighbors.
+        - ``"DIF"``: the deep isolation forest of PyOD (``pyod.models.dif.DIF``), seeded
+          with ``random_state``. Needs PyOD and PyTorch:
+          ``pip install 'pypu-learn[pyod]'``.
+
+        An estimator is cloned before fitting. A PyOD detector gives its training scores
+        ``decision_scores_``; a scikit-learn one gives ``negative_outlier_factor_``
+        (:class:`~sklearn.neighbors.LocalOutlierFactor`) or ``score_samples`` (such as
+        :class:`~sklearn.ensemble.IsolationForest` or :class:`~sklearn.svm.OneClassSVM`),
+        negated so that higher means more anomalous. ``None`` is the same as ``"IF"``.
     eta : float, default=0.5
         Weight of the reliable negatives against the unlabeled samples, in ``[0, 1]``.
     gamma : float, default=3.0
@@ -111,7 +131,7 @@ class IFPNU(_FocalBoostingClassifier):
     reg_lambda : float, default=0.0
         L2 regularization of the leaf values.
     random_state : int or None, default=None
-        Seed for the default detector and for LightGBM's random choices (only used when
+        Seed for a detector given by name and for LightGBM's random choices (only used when
         sampling features or rows).
     n_jobs : int or None, default=None
         Number of LightGBM threads; ``None`` lets LightGBM decide.
@@ -144,8 +164,8 @@ class IFPNU(_FocalBoostingClassifier):
     Notes
     -----
     The defaults are the settings of the original experiments: 100 trees, learning rate 0.1,
-    ``gamma=3`` and ``eta=0.5``. Those used DIF, EIF and OptIForest as detectors, which
-    PyPU does not include; PyOD provides DIF and many others.
+    ``gamma=3`` and ``eta=0.5``. Those used DIF, EIF and OptIForest as detectors, without
+    seeding them: ``detector="DIF"``, ``"EIF"`` and ``"OIF"``.
 
     ``decision_function`` returns the raw boosting score, whose sigmoid is
     ``predict_proba(X)[:, 1]``.
@@ -167,7 +187,7 @@ class IFPNU(_FocalBoostingClassifier):
     def __init__(
         self,
         prior=None,
-        detector=None,
+        detector="IF",
         eta=0.5,
         gamma=3.0,
         n_estimators=100,
@@ -201,15 +221,60 @@ class IFPNU(_FocalBoostingClassifier):
         eta = self.eta
         if isinstance(eta, bool) or not isinstance(eta, numbers.Real) or not 0 <= eta <= 1:
             raise ValueError(f"eta must be a number in [0, 1], got {eta!r}.")
-        if self.detector is None:
-            detector = IsolationForest(random_state=self.random_state)
+        if self.detector is None or isinstance(self.detector, str):
+            name = "IF" if self.detector is None else self.detector
+            detector = _make_detector(name, self.random_state)
         else:
             detector = clone(self.detector)
-        detector.fit(X)
+        _fit_detector(detector, X)
         self.detector_ = detector
         self.pnu_labels_ = _pnu_labels(s, _anomaly_scores(detector, X), prior)
         objective = _FocalPNUObjective(self.pnu_labels_, prior=prior, eta=float(eta), gamma=gamma)
         self._fit_booster(X, s, objective)
+
+
+def _make_detector(name, random_state):
+    """Return the detector called ``name``, with the settings of the original experiments."""
+    key = name.upper()
+    if key == "IF":
+        return IsolationForest(random_state=random_state)
+    if key == "EIF":
+        # Its defaults are the experiments' settings: 100 trees, 256 samples each, level 1.
+        return ExtendedIsolationForest(random_state=random_state)
+    if key == "OIF":
+        # Its defaults are the experiments' OptIForest('L2OPT', 100, 403, 20, 1).
+        return OptIForest(random_state=random_state)
+    if key == "LOF":
+        # The experiments used PyOD's LOF, whose training scores are scikit-learn's.
+        return LocalOutlierFactor(n_neighbors=20)
+    if key == "DIF":
+        try:
+            from pyod.models.dif import DIF
+        except ImportError as exc:
+            raise ImportError(
+                "detector='DIF' needs PyOD and PyTorch: install them with "
+                "`pip install 'pypu-learn[pyod]'`."
+            ) from exc
+        # The experiments' DIF: PyOD's defaults, with a contamination that does not change
+        # the scores.
+        return DIF(contamination=0.01, random_state=random_state)
+    names = ", ".join(repr(name) for name in _DETECTOR_NAMES)
+    raise ValueError(f"detector must be one of {names} or an estimator, got {name!r}.")
+
+
+def _fit_detector(detector, X):
+    """Fit the detector; a PyTorch one (such as DIF) on a single thread."""
+    if "torch" in sys.modules:
+        # On macOS, PyTorch on several threads crashes next to LightGBM (see _torch.py).
+        from pypu.models._torch import single_thread
+
+        with single_thread(), warnings.catch_warnings():
+            # DIF's data loaders ask for pinned memory, which PyTorch refuses (once per
+            # network) on Apple silicon even when the networks run on the CPU.
+            warnings.filterwarnings("ignore", message="'pin_memory' argument is set as true")
+            detector.fit(X)
+    else:
+        detector.fit(X)
 
 
 def _anomaly_scores(detector, X):

@@ -47,6 +47,9 @@ xgboost = ["xgboost>=2.0"]
 torch = ["torch>=2.2", "jenkspy>=0.4"]
 # The KM class-prior estimator (KMPrior, and PUe without a given prior). cvxopt is GPL-3.0.
 cvxopt = ["cvxopt>=1.3"]
+# PyOD's detectors for IFPNU's first step, such as detector="DIF" (which needs PyTorch).
+# PyOD 3.5.1 fixed DIF's training scores (decision_scores_).
+pyod = ["pyod>=3.5.1", "torch>=2.2"]
 
 [project.urls]
 Homepage = "https://github.com/izavits/PyPU"
@@ -64,6 +67,7 @@ test = [
     "torch>=2.2",  # the optional PyTorch models; CI installs the CPU build first
     "cvxopt>=1.3",  # the optional KM estimator
     "jenkspy>=0.4",  # ALMPU
+    "pyod>=3.5.1",  # IFPNU's detector="DIF"
 ]
 examples = [
     "matplotlib>=3.8",  # the figures of examples/; tests/test_examples.py runs them

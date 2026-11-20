@@ -195,6 +195,20 @@ Class-prior estimation
    KMPrior
    BasePriorEstimator
 
+Anomaly detection
+-----------------
+
+.. automodule:: pypu.anomaly
+
+.. currentmodule:: pypu.anomaly
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   ExtendedIsolationForest
+   OptIForest
+
 Utilities
 ---------
 

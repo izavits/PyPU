@@ -27,7 +27,9 @@ are identical to the copies in `pu_monorepo/iFPNU/`, so the monorepo is the sing
 | Model | Source | Dependencies |
 | --- | --- | --- |
 | `IFPU` | `pu_monorepo/iFPNU/pu/fpu_xgb.py` (`PUFLLossNonNegative`), configured in `main.py` | lightgbm |
-| `IFPNU` | `pu_monorepo/iFPNU/main_2step_ad.py` (reliable negatives) and `pu/fpu_xgb.py` (`pnu_focal_loss`) | lightgbm, an anomaly detector (scikit-learn's by default, PyOD optional) |
+| `IFPNU` | `pu_monorepo/iFPNU/main_2step_ad.py` (reliable negatives) and `pu/fpu_xgb.py` (`pnu_focal_loss`) | lightgbm, an anomaly detector (scikit-learn's by default; `pypu.anomaly`; PyOD optional, extra `pyod`) |
+| `ExtendedIsolationForest` | eif 2.0.2 (github.com/sahandha/eif; its `eif` C++ module and `eif_old.py` are in `pu_monorepo/iFPNU/venv`) | numpy |
+| `OptIForest` | `pu_monorepo/iFPNU/models/optiforest/` (github.com/xiagll/OptIForest, `detectors/`) | numpy, scipy |
 | `ALMPU` | `pu_monorepo/ALM-PU/tabular.py` | torch, jenkspy |
 | `PUHellingerTree`, `PUHellingerForest` | `pu_monorepo/PU_Hellinger_Trees/pu_tree_simplified/` | none after the rewrite |
 | `UPUBoost`, `NNPUBoost`, `ImbalancedNNPUBoost` | `pu_monorepo/PU_Hellinger_Trees/ecsmodels/methodologies/cs_boost.py` (`CSBoost`, objectives `puwce`, `nnpu`, `imbnnpu`), configured in `uPU_clean.py`, `nnPU_clean.py`, `imbalancedNNPU_clean.py` | xgboost (optional extra) |
@@ -162,8 +164,8 @@ trees ran both with linear SVMs.
      that tree has no PU correction; the final tree and the forest get the true prior.
 4. **Licensing.** Upstream code under MIT/BSD (PU_Hellinger_Trees, SAR-PU, pulearn,
    rankpruning) can be ported with attribution in `THIRD_PARTY_NOTICES.md`. `IFPNU` defaults
-   to scikit-learn's `IsolationForest` and accepts any PyOD detector instead of vendoring
-   OptIForest. For 0.4.0 the author decided (2026-11-07) to port the implementations in the
+   to scikit-learn's `IsolationForest` and first accepted any PyOD detector instead of
+   vendoring OptIForest; OptIForest was ported later (note 14). For 0.4.0 the author decided (2026-11-07) to port the implementations in the
    local repositories rather than reimplement the papers. Checked the same day, two of them
    contain other people's code without a license:
    - `iFPNU/models/helper_files/km.py` (used by `PUe`) is the kernel mixture proportion
@@ -196,7 +198,7 @@ trees ran both with linear SVMs.
      global NumPy RNG), so their scores cannot be regenerated. With PyOD's `IForest` seeded
      as the detector, the original two steps and `IFPNU` give identical PNU labels and test
      scores (`tests/models/data/ifpnu_reference.npz`), also with the default
-     `IsolationForest`.
+     `IsolationForest`. The three detectors themselves are available by name (note 14).
 7. **SAREM (resolved).** `SAREM` ports SAR-PU's `pu_learn_sar_em` (MIT, KU Leuven DTAI), the
    function the experiments' `SAREM` wrapper called with all features as propensity
    features. The same sequence of liblinear logistic regressions, clipping, log-likelihood
@@ -373,6 +375,46 @@ trees ran both with linear SVMs.
     Against the original under the same scikit-learn (`tests/models/data/rank_pruning_reference.npz`,
     with rho1 estimated or given), the noise rate, the estimated prior, the pollution, the
     refitted coefficients and the test probabilities agree to the last bit.
+14. **IFPNU's detectors (resolved).** `main_2step_ad.py` (identical in `pu_learning/` and
+    `pu_monorepo/iFPNU/` apart from a comment) offers six first-step detectors: `dif`,
+    `eif`, `optiforest`, `abif`, `lof` and `iforest`. Only the first three have saved
+    results, and all three keep the `int(pi * n)` most anomalous samples. Decided with the
+    author on 2026-11-20:
+    - Names go in the existing `detector` parameter (no separate parameter), in any case:
+      `"IF"` (default, scikit-learn's `IsolationForest`), `"EIF"`, `"OIF"`, `"LOF"`,
+      `"DIF"`. Every detector uses the top-`int(pi * n)` rule; the script's `lof` (score
+      above the mean) and `iforest` (above mean + 3 std) cut-offs are not ported. `"LOF"` is
+      scikit-learn's `LocalOutlierFactor` (20 neighbours), whose training scores are those of
+      the experiments' PyOD `LOF`.
+    - `abif` (Attention-Based Isolation Forest) is left out: it trains on the PU labels,
+      returns yes/no predictions instead of scores, needs cvxpy, and its upstream
+      (AndreyAgeev/Attention-based-isolation-forest) states no license.
+    - `"DIF"` is PyOD's `DIF(contamination=0.01)`, the experiments' settings, through the
+      `pyod` extra (PyOD and PyTorch). PyOD before 3.5.1 computed DIF's `decision_scores_`
+      from doubly scaled data (PyOD issue #546), so they differ from `decision_function(X)`,
+      which the experiments used; the extra requires 3.5.1. `IFPNU` fits a detector on one
+      PyTorch thread when PyTorch is loaded, since on macOS PyTorch on several threads next to
+      LightGBM's OpenMP deadlocks.
+    - `pypu.anomaly.ExtendedIsolationForest` ports eif 2.0.2, which is sdist-only (C++ and
+      Cython) and does not build on current Python versions; its license is the NCSA license
+      (text in `THIRD_PARTY_NOTICES.md`). The C++ `iForest` and the pure-Python `eif_old.py`
+      are the same algorithm with different random draws; PyPU draws in `eif_old.py`'s order
+      and reproduces its scores to the last bit from the same NumPy seed
+      (`tests/anomaly/data/eif_reference.npz`, with `eif_old`'s `random.sample` drawn from
+      NumPy). The C++ version seeds tree `i` with `seed + i`, so nearby seeds share trees;
+      against ten C++ runs with seeds 1000 apart, PyPU's scores correlate with them as closely
+      as the C++ runs do with one another (Spearman 0.95 to 0.98). Defaults: 100 trees,
+      `max_samples="auto"` (256), `extension_level=1`, as in the experiments.
+    - `pypu.anomaly.OptIForest` ports the local copy, which is upstream xiagll/OptIForest
+      reformatted, with no license stated (credited in `THIRD_PARTY_NOTICES.md`, as km.py and
+      ALM-PU). It scores samples in batches instead of one by one, and draws its random
+      numbers from one generator in the original's order (all trees' samples, then all hash
+      functions, then the trees). From the same NumPy seed it reproduces the original's
+      `decision_function` to the last bit (`tests/anomaly/data/optiforest_reference.npz`: the
+      experiments' `OptIForest('L2OPT', 100, 403, 20, 1)`, and L1OPT, ALOPT, pair, triple and
+      random merges, with `opt_tree`'s `random.random` drawn from NumPy for `branch=0`).
+      Defaults are the experiments' settings, including `branch=20` (upstream's default
+      is 0).
 
 ## Validating ports
 
@@ -390,4 +432,4 @@ PyPU version reproduces them (within a tolerance, documented when they differ on
 - Core dependencies stay small: numpy, scipy, scikit-learn and lightgbm (since `IFPU`).
   LightGBM's macOS wheels need Homebrew's `libomp`; models are imported lazily, so this only
   affects the LightGBM-based models.
-  PyTorch (`[torch]`), XGBoost (`[xgboost]`) and PyOD are optional.
+  PyTorch (`[torch]`), XGBoost (`[xgboost]`) and PyOD (`[pyod]`) are optional.

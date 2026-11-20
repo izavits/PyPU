@@ -33,10 +33,19 @@ details.
 - The original objective applies a non-negative correction that never triggers, so the
   second step is a weighted focal loss over the labeled positives, the reliable negatives
   and the remaining unlabeled samples.
-- The experiments used the DIF, EIF and OptIForest anomaly detectors, which PyPU does not
-  include. It uses scikit-learn's {class}`~sklearn.ensemble.IsolationForest` by default,
-  and accepts any PyOD detector or scikit-learn outlier detector instead. With the same
-  seeded detector, it gives the same labels and scores as the original code.
+- The experiments used three anomaly detectors, without seeding them: PyOD's deep
+  isolation forest (DIF), the extended isolation forest (EIF) and OptIForest.
+  `detector="DIF"`, `"EIF"` and `"OIF"` give them with the experiments' settings (see
+  [Anomaly detectors](#anomaly-detectors)), but their saved scores cannot be regenerated.
+  The default is scikit-learn's {class}`~sklearn.ensemble.IsolationForest`, and any PyOD
+  detector or scikit-learn outlier detector can be given instead. With the same seeded
+  detector, it gives the same labels and scores as the original code.
+- Every detector, named or given, keeps the $\lfloor \pi n \rfloor$ most anomalous samples
+  as candidate positives, as the experiments did with DIF, EIF and OptIForest. The
+  experiments' script also had LOF and isolation forest options that kept the samples
+  scoring above the mean, or above the mean plus three standard deviations, with no saved
+  results; those cut-offs are not ported, and `"LOF"` and `"IF"` use the same rule as the
+  others.
 - It assumes the positives look anomalous. When they do not, the detector misses them and
   hidden positives become reliable negatives. `eta` sets how much the reliable negatives
   weigh against the remaining unlabeled samples.
@@ -157,11 +166,32 @@ details.
   multiples of its bisection's resolution, so nearby datasets often get exactly the same
   estimate.
 
+## Anomaly detectors
+
+The detectors that {class}`~pypu.models.IFPNU`'s experiments used, and that no maintained
+package provides, are ported in {mod}`pypu.anomaly`. Their defaults are the experiments'
+settings.
+
+- {class}`~pypu.anomaly.ExtendedIsolationForest` ports the C++ algorithm of the authors'
+  `eif` package (version 2.0.2), which no longer installs on current Python versions. It
+  draws its random numbers as the package's pure-Python version does, and gives that
+  version's scores exactly from the same NumPy seed. The C++ version, which the
+  experiments ran, draws them differently: its scores and PyPU's agree as closely as those
+  of two runs of the C++ version.
+- {class}`~pypu.anomaly.OptIForest` ports the authors' code, as the experiments used it,
+  and gives its scores exactly from the same NumPy seed. Without a seed, both draw from
+  NumPy's global generator. It scores many samples at once, several times faster than the
+  original.
+- `detector="DIF"` is PyOD's deep isolation forest, which needs PyOD 3.5.1 or newer:
+  earlier versions stored training scores that differ from those of its
+  `decision_function`, which the experiments used.
+
 ## Reproducibility
 
 - Models that take a `random_state` give the same results for the same value, on the same
   versions of their dependencies.
 - The PyTorch models run on one thread, so their results do not depend on the number of
-  cores, and compute their predictions in float64.
+  cores, and compute their predictions in float64. {class}`~pypu.models.IFPNU` fits a
+  PyTorch detector, such as DIF, on one thread too.
 - [Installation](../install.md#platform-notes) explains how PyPU keeps PyTorch and
   LightGBM working together on macOS.

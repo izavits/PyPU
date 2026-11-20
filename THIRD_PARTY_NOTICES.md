@@ -14,6 +14,31 @@ from the projects below, credited here with their license texts where they have 
   2025).
 - **License:** none is stated with the code.
 
+## eif (Extended Isolation Forest)
+
+- **Used in:** `src/pypu/anomaly/_eif.py` (`ExtendedIsolationForest`, and `IFPNU`'s
+  `detector="EIF"`): a NumPy port of the trees, splits and scores of the package's C++
+  `iForest`, drawing its random numbers in the order of the package's `eif_old.py`.
+- **Source:** eif 2.0.2, https://github.com/sahandha/eif, by Matias Carrasco Kind and Sahand
+  Hariri, the code of "Extended isolation forest" (S. Hariri, M. Carrasco Kind and R. J.
+  Brunner, IEEE Transactions on Knowledge and Data Engineering, 2021).
+- **License:** University of Illinois/NCSA Open Source License.
+
+```
+Copyright (c) 2018 University of Illinois at Urbana-Champaign
+All rights reserved.
+
+Developed by:     Matias Carrasco Kind & Sahand Hariri
+                  NCSA/UIUC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal with the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimers.
+Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimers in the documentation and/or other materials provided with the distribution.
+Neither the names of Matias Carrasco Kind, Sahand Hariri, University of Illinois at Urbana-Champaign and NCSA, nor the names of its contributors may be used to endorse or promote products derived from this Software without specific prior written permission.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+```
+
 ## FixMatch-pytorch
 
 - **Used in:** `src/pypu/models/almpu.py`: the exponential moving average of the model and
@@ -89,6 +114,17 @@ SOFTWARE.
 - **License:** none is stated with the code.
 - It calls CVXOPT (GPL-3.0), an optional dependency (`pypu-learn[cvxopt]`) that PyPU does
   not distribute.
+
+## OptIForest
+
+- **Used in:** `src/pypu/anomaly/_optiforest.py` (`OptIForest`, and `IFPNU`'s
+  `detector="OIF"`): the sampling, the locality-sensitive hash families, the trees, their
+  hierarchical regrouping and the scores, ported from the copy in the iFPNU experiments,
+  which is the authors' code unchanged apart from formatting.
+- **Source:** https://github.com/xiagll/OptIForest (`detectors/`), by Haolong Xiang and
+  colleagues, the code of "OptIForest: Optimal Isolation Forest for Anomaly Detection"
+  (IJCAI 2023).
+- **License:** none is stated with the code.
 
 ## rankpruning
 

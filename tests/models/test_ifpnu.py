@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -8,6 +9,7 @@ from sklearn.ensemble import IsolationForest
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.svm import OneClassSVM
 
+from pypu.anomaly import ExtendedIsolationForest, OptIForest
 from pypu.models import IFPNU
 from pypu.models.ifpnu import _anomaly_scores, _FocalPNUObjective, _pnu_labels
 
@@ -136,6 +138,90 @@ class TestAnomalyScores:
         X, y, s = pu_data
         with pytest.raises(ValueError, match="one finite anomaly score per training sample"):
             IFPNU(prior=y.mean(), detector=FixedScores(scores)).fit(X, s)
+
+
+class TestDetectorNames:
+    def test_default_is_a_seeded_isolation_forest(self, pu_data):
+        X, y, s = pu_data
+        default = IFPNU(prior=y.mean(), n_estimators=5, random_state=0).fit(X, s)
+        forest = IsolationForest(random_state=0)
+        given = IFPNU(prior=y.mean(), detector=forest, n_estimators=5).fit(X, s)
+        assert default.detector == "IF"
+        np.testing.assert_array_equal(default.pnu_labels_, given.pnu_labels_)
+
+    @pytest.mark.parametrize("name", ["if", "If", None])
+    def test_names_ignore_case_and_none_is_if(self, pu_data, name):
+        X, y, s = pu_data
+        model = IFPNU(prior=y.mean(), detector=name, n_estimators=5, random_state=0).fit(X, s)
+        default = IFPNU(prior=y.mean(), n_estimators=5, random_state=0).fit(X, s)
+        assert isinstance(model.detector_, IsolationForest)
+        np.testing.assert_array_equal(model.pnu_labels_, default.pnu_labels_)
+
+    def test_eif_is_the_experiments_eif_seeded(self, pu_data):
+        X, y, s = pu_data
+        model = IFPNU(prior=y.mean(), detector="eif", n_estimators=5, random_state=0).fit(X, s)
+        detector = model.detector_
+        assert isinstance(detector, ExtendedIsolationForest)
+        assert (detector.n_estimators, detector.max_samples_, detector.extension_level) == (
+            100,
+            256,
+            1,
+        )
+        given = ExtendedIsolationForest(random_state=0).fit(X)
+        np.testing.assert_array_equal(
+            model.pnu_labels_, _pnu_labels(s, -given.score_samples(X), y.mean())
+        )
+
+    def test_oif_is_the_experiments_optiforest_seeded(self, pu_data):
+        X, y, s = pu_data
+        model = IFPNU(prior=y.mean(), detector="Oif", n_estimators=5, random_state=0).fit(X, s)
+        assert isinstance(model.detector_, OptIForest)
+        assert model.detector_.get_params() == OptIForest(random_state=0).get_params()
+        given = OptIForest(random_state=0).fit(X)
+        np.testing.assert_array_equal(
+            model.pnu_labels_, _pnu_labels(s, -given.score_samples(X), y.mean())
+        )
+
+    def test_lof_matches_the_experiments_pyod_lof(self, pu_data):
+        lof = pytest.importorskip("pyod.models.lof")
+        X, y, s = pu_data
+        model = IFPNU(prior=y.mean(), detector="lof", n_estimators=5).fit(X, s)
+        assert isinstance(model.detector_, LocalOutlierFactor)
+        # As run: LOF(contamination=pu_ratio, n_jobs=-1); contamination leaves the scores.
+        original = lof.LOF(contamination=0.25, n_jobs=-1).fit(X)
+        np.testing.assert_array_equal(
+            model.pnu_labels_, _pnu_labels(s, original.decision_scores_, y.mean())
+        )
+
+    @pytest.mark.filterwarnings("ignore:'pin_memory' argument is set as true")
+    def test_dif_is_the_experiments_dif_seeded(self, pu_data):
+        dif = pytest.importorskip("pyod.models.dif")
+        X, y, s = pu_data
+        model = IFPNU(prior=y.mean(), detector="DIF", n_estimators=5, random_state=0).fit(X, s)
+        detector = model.detector_
+        assert isinstance(detector, dif.DIF)
+        assert (detector.hidden_activation, detector.contamination) == ("tanh", 0.01)
+        assert detector.random_state == 0
+        # The experiments ranked the samples by decision_function on the training data.
+        from pypu.models._torch import single_thread  # PyTorch next to LightGBM on macOS
+
+        with single_thread():
+            scores = detector.decision_function(X)
+        np.testing.assert_array_equal(model.pnu_labels_, _pnu_labels(s, scores, y.mean()))
+        again = IFPNU(prior=y.mean(), detector="dif", n_estimators=5, random_state=0).fit(X, s)
+        np.testing.assert_array_equal(again.pnu_labels_, model.pnu_labels_)
+        np.testing.assert_array_equal(again.predict_proba(X), model.predict_proba(X))
+
+    def test_dif_without_pyod_names_the_extra(self, pu_data, monkeypatch):
+        monkeypatch.setitem(sys.modules, "pyod.models.dif", None)
+        X, y, s = pu_data
+        with pytest.raises(ImportError, match=r"pypu-learn\[pyod\]"):
+            IFPNU(prior=y.mean(), detector="DIF").fit(X, s)
+
+    def test_rejects_unknown_names(self, pu_data):
+        X, y, s = pu_data
+        with pytest.raises(ValueError, match="one of 'IF', 'EIF', 'OIF', 'LOF', 'DIF' or an"):
+            IFPNU(prior=y.mean(), detector="ECOD").fit(X, s)
 
 
 def test_detector_is_cloned(pu_data):

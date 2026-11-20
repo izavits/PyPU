@@ -48,11 +48,15 @@ positive is a safe default for any model (see
 use a focal loss, which focuses training on the hard samples, and
 {class}`~pypu.models.ImbalancedNNPUBoost` trains as if the positives were more frequent.
 IFPNU also assumes that the positives look anomalous: it takes the samples an anomaly
-detector flags as candidate positives.
+detector flags as candidate positives. Its `detector` takes an isolation forest by default;
+the names `"EIF"`, `"OIF"`, `"LOF"` and `"DIF"` pick the extended isolation forest,
+OptIForest, the local outlier factor or a deep isolation forest instead, and any
+scikit-learn or PyOD outlier detector can be given.
 
 **Which dependencies can you install?** Fourteen models need only scikit-learn and
 LightGBM. The boosting models of the PU risks need XGBoost, and the neural models need
-PyTorch (see [Installation](../install.md)).
+PyTorch (see [Installation](../install.md)). Of IFPNU's named detectors, only the deep
+isolation forest needs more: PyOD and PyTorch.
 
 ## All the models
 

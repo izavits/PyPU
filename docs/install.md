@@ -17,15 +17,19 @@ Some models need a library that is not installed by default:
 | `xgboost` | XGBoost | {class}`~pypu.models.UPUBoost`, {class}`~pypu.models.NNPUBoost`, {class}`~pypu.models.ImbalancedNNPUBoost` |
 | `torch` | PyTorch, jenkspy | {class}`~pypu.models.LBE`, {class}`~pypu.models.PUe`, {class}`~pypu.models.ALMPU` |
 | `cvxopt` | CVXOPT | {class}`~pypu.prior.KMPrior`, and {class}`~pypu.models.PUe` when no prior is given |
+| `pyod` | PyOD, PyTorch | {class}`~pypu.models.IFPNU` with `detector="DIF"`, PyOD's deep isolation forest |
 
 ```bash
 pip install "pypu-learn[xgboost]"
 pip install "pypu-learn[torch]"
 pip install "pypu-learn[cvxopt]"
-pip install "pypu-learn[xgboost,torch,cvxopt]"  # all of them
+pip install "pypu-learn[pyod]"
+pip install "pypu-learn[xgboost,torch,cvxopt,pyod]"  # all of them
 ```
 
-A model whose extra is missing raises an `ImportError` that names the extra to install.
+A model or detector whose extra is missing raises an `ImportError` that names the extra to
+install. Any other PyOD detector can be passed to {class}`~pypu.models.IFPNU` once PyOD is
+installed, with the `pyod` extra or on its own.
 
 [CVXOPT](https://cvxopt.org) is licensed under the GPL-3.0; PyPU itself stays under the BSD
 3-Clause License.
@@ -42,7 +46,8 @@ brew install libomp
 ```
 
 PyTorch bundles its own OpenMP runtime, which conflicts with the one LightGBM uses. PyPU
-loads LightGBM first and runs its PyTorch models on one thread, so they work together, but
+loads LightGBM first and runs its PyTorch models, and the PyTorch detectors of
+{class}`~pypu.models.IFPNU` such as DIF, on one thread, so they work together, but
 importing `torch` yourself before using a LightGBM-based model can crash LightGBM.
 
 **Linux.** PyPI's PyTorch wheels include CUDA. For the smaller CPU build, install PyTorch
