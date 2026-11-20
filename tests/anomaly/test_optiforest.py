@@ -36,8 +36,11 @@ def X_with_outlier():
 def test_reproduces_the_original_from_the_same_seed(reference, case):
     seed, params = EXACT_CASES[case]
     detector = OptIForest(random_state=seed, **params).fit(reference["X"])
-    np.testing.assert_array_equal(
-        detector.score_samples(reference["X"]), reference[f"{case}_scores"]
+    # Equal on the macOS machine that saved the reference. Elsewhere NumPy's log and power can
+    # differ in the last bits; one sample sent the other way in one tree would change its
+    # score by far more than this tolerance.
+    np.testing.assert_allclose(
+        detector.score_samples(reference["X"]), reference[f"{case}_scores"], rtol=1e-12, atol=0
     )
 
 
@@ -97,8 +100,12 @@ def test_same_seed_same_scores(X_with_outlier):
 
 def test_scores_new_samples_without_refitting(X_with_outlier):
     detector = OptIForest(n_estimators=5, threshold=60, random_state=0).fit(X_with_outlier)
-    np.testing.assert_array_equal(
-        detector.score_samples(X_with_outlier[:7]), detector.score_samples(X_with_outlier)[:7]
+    # SIMD code may round the tail of an array differently: equal up to rounding.
+    np.testing.assert_allclose(
+        detector.score_samples(X_with_outlier[:7]),
+        detector.score_samples(X_with_outlier)[:7],
+        rtol=1e-12,
+        atol=0,
     )
 
 

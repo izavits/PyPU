@@ -45,8 +45,11 @@ def anomaly_scores(detector, X):
 def test_reproduces_eif_old_from_the_same_seed(reference, case):
     seed, params = EXACT_CASES[case]
     detector = ExtendedIsolationForest(random_state=seed, **params).fit(reference["X"])
-    np.testing.assert_array_equal(
-        anomaly_scores(detector, reference["X"]), reference[f"{case}_scores"]
+    # Equal on the macOS machine that saved the reference. Elsewhere NumPy's log and power can
+    # differ in the last bits; one sample sent the other way in one tree would change its
+    # score by far more than this tolerance.
+    np.testing.assert_allclose(
+        anomaly_scores(detector, reference["X"]), reference[f"{case}_scores"], rtol=1e-12, atol=0
     )
 
 
@@ -128,8 +131,12 @@ def test_same_seed_same_scores(X_with_outlier):
 
 def test_scores_new_samples_without_refitting(X_with_outlier):
     detector = ExtendedIsolationForest(n_estimators=10, random_state=0).fit(X_with_outlier)
-    np.testing.assert_array_equal(
-        detector.score_samples(X_with_outlier[:5]), detector.score_samples(X_with_outlier)[:5]
+    # SIMD code may round the tail of an array differently: equal up to rounding.
+    np.testing.assert_allclose(
+        detector.score_samples(X_with_outlier[:5]),
+        detector.score_samples(X_with_outlier)[:5],
+        rtol=1e-12,
+        atol=0,
     )
 
 
