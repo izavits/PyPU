@@ -18,6 +18,7 @@ file tracks what is planned, where the code comes from, and what to watch for wh
 | 0.6.1 (released 2026-11-08) | `examples/`: getting-started examples, one example per model, and a comparison of all the models on one dataset. |
 | 0.6.2 (released 2026-11-09) | The documentation site, [pypu.readthedocs.io](https://pypu.readthedocs.io): a user guide, the examples gallery and the API reference, built by Read the Docs. |
 | 0.7.0 (released 2026-11-20) | `IFPNU`'s first-step detector by name (`"IF"`, `"EIF"`, `"OIF"`, `"LOF"`, `"DIF"`); `pypu.anomaly` with `ExtendedIsolationForest` (eif) and `OptIForest`, ported from the detectors of the iFPNU experiments; optional PyOD extra (porting note 14). |
+| 0.8.0 (released 2026-11-24) | The SAR labeling mechanisms of PU-Bench: `label_sar_lbe` (LBE-A, LBE-B) and `label_sar_pusb` (PUSB), also in `make_pu_split`; `pu_accuracy_score`, the proxy accuracy of Wang et al. minus the prior, for single-training-set and case-control data (porting note 15). |
 | Later | Loaders for the benchmark datasets, a benchmark table comparing all methods on many datasets. |
 
 ## Methods and their sources
@@ -65,7 +66,7 @@ New:
   more likely to be labeled.
 - `make_case_control`: every positive kept, negatives subsampled so the unlabeled set has the
   class prior of the data.
-- `label_sar_lbe` and `label_sar_pusb` (after 0.7.0): the SAR mechanisms of PU-Bench, LBE-A,
+- `label_sar_lbe` and `label_sar_pusb` (0.8.0): the SAR mechanisms of PU-Bench, LBE-A,
   LBE-B and PUSB, from an in-sample classifier posterior (porting note 15).
 - `make_pu_split`: stratified train/test split with PU labels on the training part only.
 - `pu_summary`: true prior, label frequency and pollution of the unlabeled set.
@@ -80,7 +81,7 @@ and the best F1 over thresholds.
 
 New: Lee and Liu's criterion, and estimates of recall, precision, F1 and ROC AUC from PU
 labels and the class prior (Jain, White and Radivojac, AAAI 2017), usable as scikit-learn
-scorers for model selection without true labels. After 0.7.0: `pu_accuracy_score`, the
+scorers for model selection without true labels. In 0.8.0: `pu_accuracy_score`, the
 proxy accuracy of Wang et al. (ICLR 2026) minus the prior, for single-training-set and
 case-control data (porting note 15).
 

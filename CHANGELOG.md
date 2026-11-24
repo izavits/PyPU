@@ -9,6 +9,11 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-24
+
+PU-Bench's SAR labeling mechanisms (LBE-A, LBE-B and PUSB), and an estimate of the
+accuracy from PU labels by proxy accuracy.
+
 ### Added
 
 - Two labeling mechanisms in `pypu.datasets`, the SAR mechanisms of the PU-Bench
@@ -307,7 +312,8 @@ evaluation metrics (including estimates from PU labels alone) and class-prior es
 - `pypu.utils.check_pu_labels`, `pypu.utils.check_prior`, `pypu.utils.threshold_from_prior`
   and `pypu.show_versions()`.
 
-[Unreleased]: https://github.com/izavits/PyPU/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/izavits/PyPU/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/izavits/PyPU/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/izavits/PyPU/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/izavits/PyPU/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/izavits/PyPU/compare/v0.6.0...v0.6.1
