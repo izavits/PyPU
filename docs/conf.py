@@ -15,8 +15,8 @@ sys.path.insert(0, str(DOCS / "sphinxext"))
 # ---------------------------------------------------------------- project
 
 project = "PyPU"
-author = "Ilias Zavitsanos"
-copyright = "2026, Ilias Zavitsanos"
+author = "Elias Zavitsanos"
+copyright = "2026, Elias Zavitsanos"
 release = pypu.__version__
 version = ".".join(release.split(".")[:2])
 

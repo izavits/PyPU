@@ -4,7 +4,7 @@ If you use PyPU in your research, please cite it:
 
 ```bibtex
 @software{pypu,
-  author  = {Zavitsanos, Ilias},
+  author  = {Zavitsanos, Elias},
   title   = {{PyPU}: Positive-unlabeled learning in Python},
   url     = {https://github.com/izavits/PyPU},
   license = {BSD-3-Clause},

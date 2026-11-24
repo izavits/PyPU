@@ -3,7 +3,7 @@ message: "If you use PyPU in your research, please cite it using the metadata be
 title: "PyPU: Positive-unlabeled learning in Python"
 type: software
 authors:
-  - given-names: Ilias
+  - given-names: Elias
     family-names: Zavitsanos
 repository-code: "https://github.com/izavits/PyPU"
 url: "https://pypu.readthedocs.io"
