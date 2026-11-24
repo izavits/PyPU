@@ -6,13 +6,15 @@ everything else, so the unlabeled set mixes the remaining positives with all neg
 positives are ever labeled.
 
 Apart from :func:`label_sar_propensity`, which draws each label independently from a known
-propensity, the functions label exactly ``round(label_frequency * n_positive)`` positives.
+propensity, and :func:`label_sar_pusb`, which may label fewer, the functions label exactly
+``round(label_frequency * n_positive)`` positives.
 """
 
 from __future__ import annotations
 
 import math
 import numbers
+import warnings
 
 import numpy as np
 from scipy.optimize import brentq
@@ -449,11 +451,7 @@ def label_sar_confidence(
     X, y = _check_X_y(X, y)
     c = check_label_frequency(label_frequency)
     bias = _check_option(bias, "bias", ("easy", "hard"))
-    estimator = LogisticRegression() if estimator is None else clone(estimator)
-    if not hasattr(estimator, "predict_proba"):
-        raise TypeError(
-            f"estimator must implement predict_proba; {type(estimator).__name__} does not."
-        )
+    estimator = _check_proba_estimator(estimator)
     rng = check_random_state(random_state)
 
     # Columns follow the sorted classes [0, 1].
@@ -461,4 +459,215 @@ def label_sar_confidence(
     positives = np.flatnonzero(y == 1)
     weights = proba[positives] if bias == "easy" else 1.0 - proba[positives]
     labeled = positives[weighted_choice(rng, weights, n_labeled_positives(c, positives.size))]
+    return labels_from_indices(y.size, labeled)
+
+
+def _check_proba_estimator(estimator):
+    """Clone ``estimator``, or make a logistic regression for ``None``; check predict_proba."""
+    estimator = LogisticRegression() if estimator is None else clone(estimator)
+    if not hasattr(estimator, "predict_proba"):
+        raise TypeError(
+            f"estimator must implement predict_proba; {type(estimator).__name__} does not."
+        )
+    return estimator
+
+
+def _in_sample_posterior(estimator, X, y, positives) -> np.ndarray:
+    """``P(y = 1 | x)`` of the positives, from ``estimator`` fitted on every sample."""
+    # Columns follow the sorted classes [0, 1].
+    return estimator.fit(X, y).predict_proba(X[positives])[:, 1]
+
+
+def _lbe_draw_probabilities(posterior, bias: str) -> np.ndarray:
+    """Probability of drawing each positive first, as in PU-Bench's LBE-A and LBE-B.
+
+    The arithmetic follows ``create_pu_training_set`` in PU-Bench's ``data/data_utils.py``
+    step by step, so the probabilities match it to the last bit.
+    """
+    n_positive = posterior.size
+    power = 10  # k, "as specified in the LBE paper" according to PU-Bench
+    # For "hard", 1.5 plus ShrinkCoef = 1.0, from the LBE code's syn function according to
+    # PU-Bench; the weights are at least 1.5**10, since p <= 1.
+    weights = posterior**power if bias == "easy" else (1.5 + 1.0 - posterior) ** power
+    total = weights.sum()
+    p = weights / total if total > 0 else np.full(n_positive, 1.0 / n_positive)
+    if bias == "easy":
+        # Smoothing towards uniform, from the LBE code's mySampling according to PU-Bench.
+        p = 0.9 * p + 0.1 * np.full(n_positive, 1.0 / n_positive)
+        p /= p.sum()
+    return p
+
+
+def label_sar_lbe(X, y, *, label_frequency=0.5, bias="easy", estimator=None, random_state=None):
+    r"""Label positives with the LBE labeling schemes, from a classifier's posterior (SAR).
+
+    A classifier is trained on the true labels of all samples, and its predictions on the
+    same samples give each positive a probability :math:`p` of being positive. Positives are
+    then drawn without replacement, each with probability proportional to
+
+    - ``bias="easy"``: :math:`0.9 \, p^{10} / \sum p^{10} + 0.1 / n_+`, with the sum over
+      the :math:`n_+` positives. The labeled positives are mostly the obvious ones, but the
+      uniform part leaves every positive a chance.
+    - ``bias="hard"``: :math:`(2.5 - p)^{10}`. The labeled positives are mostly the
+      ambiguous ones, near the class boundary.
+
+    These are the LBE-A and LBE-B mechanisms of PU-Bench [2]_, which takes them from the
+    synthetic labels of the LBE paper [1]_. The tenth power makes the bias much stronger than
+    in :func:`label_sar_confidence`, which weights the positives by :math:`p` or
+    :math:`1 - p`, from out-of-fold predictions.
+
+    Parameters
+    ----------
+    X : array-like of shape (n_samples, n_features)
+        Features.
+    y : array-like of shape (n_samples,)
+        True labels: 1 for positive, 0 for negative.
+    label_frequency : float, default=0.5
+        Fraction of the positives to label, :math:`c = P(s = 1 \mid y = 1)`, in ``(0, 1]``.
+    bias : {"easy", "hard"}, default="easy"
+        Whether the labeled positives are mostly the confidently recognised ones (LBE-A) or
+        the ambiguous ones (LBE-B).
+    estimator : classifier, default=None
+        A scikit-learn classifier implementing ``predict_proba``. It is cloned, fitted on all
+        of ``X`` and ``y``, and predicts on the same samples. ``None`` uses
+        :class:`~sklearn.linear_model.LogisticRegression`, as PU-Bench does.
+    random_state : int, RandomState instance or None, default=None
+        Seed or random number generator for drawing the labels. A random ``estimator`` takes
+        its own ``random_state``.
+
+    Returns
+    -------
+    s : ndarray of shape (n_samples,), dtype int64
+        PU labels: 1 for a labeled positive, 0 for an unlabeled sample.
+
+    See Also
+    --------
+    label_sar_confidence : A milder bias of the same kind.
+
+    References
+    ----------
+    .. [1] C. Gong, Q. Wang, T. Liu, B. Han, J. You, J. Yang and D. Tao.
+       "Instance-dependent positive and unlabeled learning with labeling bias estimation."
+       IEEE Transactions on Pattern Analysis and Machine Intelligence, 44(8), 2022.
+    .. [2] Q. Chen, H. Zhang, L. Zhang, C. Li, J. Wang and W. Wang. "PU-Bench: a unified
+       benchmark for rigorous and reproducible PU learning." ICLR 2026.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import make_classification
+    >>> from sklearn.linear_model import LogisticRegression
+    >>> from pypu.datasets import label_sar_lbe
+    >>> X, y = make_classification(n_samples=500, random_state=0)
+    >>> p = LogisticRegression().fit(X, y).predict_proba(X)[:, 1]
+    >>> easy = label_sar_lbe(X, y, label_frequency=0.2, bias="easy", random_state=0)
+    >>> hard = label_sar_lbe(X, y, label_frequency=0.2, bias="hard", random_state=0)
+    >>> int(easy.sum()), int(hard.sum())
+    (50, 50)
+    >>> round(float(p[y == 1].mean()), 2)  # over all the positives
+    0.76
+    >>> round(float(p[easy == 1].mean()), 2), round(float(p[hard == 1].mean()), 2)
+    (0.94, 0.37)
+    """
+    X, y = _check_X_y(X, y)
+    c = check_label_frequency(label_frequency)
+    bias = _check_option(bias, "bias", ("easy", "hard"))
+    estimator = _check_proba_estimator(estimator)
+    rng = check_random_state(random_state)
+    positives = np.flatnonzero(y == 1)
+    n_labeled = n_labeled_positives(c, positives.size)
+
+    p = _lbe_draw_probabilities(_in_sample_posterior(estimator, X, y, positives), bias)
+    # Every probability is positive, so any number of positives can be drawn.
+    return labels_from_indices(y.size, rng.choice(positives, n_labeled, replace=False, p=p))
+
+
+def _pusb_acceptance_probabilities(posterior) -> np.ndarray:
+    """Probability of accepting each positive, as in the nnPUSB code and PU-Bench."""
+    # Dividing by the mean and then by the maximum amounts to dividing by the maximum; the
+    # two steps are kept from the original code, so the probabilities match it to the last bit.
+    mean = posterior.mean()
+    scores = posterior / mean if np.isfinite(mean) and mean > 0 else np.ones_like(posterior)
+    maximum = scores.max()
+    accept = scores / maximum if np.isfinite(maximum) and maximum > 0 else np.ones_like(scores)
+    return np.clip(accept, 0.0, 1.0)
+
+
+def label_sar_pusb(X, y, *, label_frequency=0.5, estimator=None, random_state=None):
+    r"""Label positives by accept-reject on a classifier's posterior, as for PUSB (SAR).
+
+    A classifier is trained on the true labels of all samples, and its predictions on the
+    same samples give each positive a probability :math:`p` of being positive. Each positive
+    is accepted with probability :math:`p / \max p`, the maximum taken over the positives,
+    and the labeled positives are drawn uniformly from the accepted ones. A positive's chance
+    of being labeled is thus roughly proportional to :math:`p`: the labeled positives are
+    mostly the obvious ones.
+
+    This is the labeling of the nnPUSB experiments in the code of Kato et al. [1]_, which
+    used a neural network on MNIST, as PU-Bench [2]_ applies it with a logistic regression.
+
+    About :math:`\sum p / \max p` positives are accepted. When fewer than
+    ``round(label_frequency * n_positive)`` are, all of them are labeled and a warning says
+    so, as can happen with a large ``label_frequency`` on data where many positives are hard
+    to recognise.
+
+    Parameters
+    ----------
+    X : array-like of shape (n_samples, n_features)
+        Features.
+    y : array-like of shape (n_samples,)
+        True labels: 1 for positive, 0 for negative.
+    label_frequency : float, default=0.5
+        Fraction of the positives to label, :math:`c = P(s = 1 \mid y = 1)`, in ``(0, 1]``;
+        an upper bound when few positives are accepted.
+    estimator : classifier, default=None
+        A scikit-learn classifier implementing ``predict_proba``. It is cloned, fitted on all
+        of ``X`` and ``y``, and predicts on the same samples. ``None`` uses
+        :class:`~sklearn.linear_model.LogisticRegression`, as PU-Bench does.
+    random_state : int, RandomState instance or None, default=None
+        Seed or random number generator for drawing the labels. A random ``estimator`` takes
+        its own ``random_state``.
+
+    Returns
+    -------
+    s : ndarray of shape (n_samples,), dtype int64
+        PU labels: 1 for a labeled positive, 0 for an unlabeled sample.
+
+    Warns
+    -----
+    UserWarning
+        If fewer positives are accepted than ``label_frequency`` asks for.
+
+    References
+    ----------
+    .. [1] M. Kato, T. Teshima and J. Honda. "Learning from positive and unlabeled data with
+       a selection bias." ICLR 2019.
+    .. [2] Q. Chen, H. Zhang, L. Zhang, C. Li, J. Wang and W. Wang. "PU-Bench: a unified
+       benchmark for rigorous and reproducible PU learning." ICLR 2026.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import make_classification
+    >>> from pypu.datasets import label_sar_pusb
+    >>> X, y = make_classification(n_samples=500, random_state=0)
+    >>> s = label_sar_pusb(X, y, label_frequency=0.2, random_state=0)
+    >>> int(s.sum()), int(y.sum())
+    (50, 249)
+    """
+    X, y = _check_X_y(X, y)
+    c = check_label_frequency(label_frequency)
+    estimator = _check_proba_estimator(estimator)
+    rng = check_random_state(random_state)
+    positives = np.flatnonzero(y == 1)
+    n_labeled = n_labeled_positives(c, positives.size)
+
+    accept = _pusb_acceptance_probabilities(_in_sample_posterior(estimator, X, y, positives))
+    accepted = positives[accept > rng.random_sample(positives.size)]
+    labeled = rng.permutation(accepted)[:n_labeled]
+    if labeled.size < n_labeled:
+        warnings.warn(
+            f"Only {labeled.size} of the {positives.size} positives were accepted, fewer than "
+            f"the {n_labeled} that label_frequency={c} asks for; all {labeled.size} are labeled.",
+            UserWarning,
+            stacklevel=2,
+        )
     return labels_from_indices(y.size, labeled)

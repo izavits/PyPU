@@ -8,6 +8,8 @@ mechanism, and return PU labels ``s`` (1 for a labeled positive, 0 for unlabeled
 - :func:`label_sar_propensity`: with a known logistic propensity on chosen features.
 - :func:`label_sar_cluster`: only from some clusters of the positives.
 - :func:`label_sar_confidence`: by how confidently a classifier recognises each positive.
+- :func:`label_sar_lbe`: the same, with the stronger bias of the LBE labeling schemes.
+- :func:`label_sar_pusb`: by accept-reject on a classifier's posterior, as for PUSB.
 
 :func:`make_pu_split` combines a stratified train/test split with one of these mechanisms,
 :func:`make_case_control` makes case-control data, and :func:`pu_summary` describes PU data
@@ -19,7 +21,9 @@ from pypu.datasets._labeling import (
     label_sar_cluster,
     label_sar_confidence,
     label_sar_knn,
+    label_sar_lbe,
     label_sar_propensity,
+    label_sar_pusb,
     label_scar,
 )
 from pypu.datasets._split import PUSplit, make_pu_split
@@ -35,7 +39,9 @@ __all__ = [
     "label_sar_cluster",
     "label_sar_confidence",
     "label_sar_knn",
+    "label_sar_lbe",
     "label_sar_propensity",
+    "label_sar_pusb",
     "label_scar",
     "make_case_control",
     "make_pu_split",

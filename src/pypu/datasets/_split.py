@@ -13,7 +13,9 @@ from pypu.datasets._labeling import (
     label_sar_cluster,
     label_sar_confidence,
     label_sar_knn,
+    label_sar_lbe,
     label_sar_propensity,
+    label_sar_pusb,
     label_scar,
 )
 
@@ -23,6 +25,8 @@ _MECHANISMS = {
     "sar_propensity": label_sar_propensity,
     "sar_cluster": label_sar_cluster,
     "sar_confidence": label_sar_confidence,
+    "sar_lbe": label_sar_lbe,
+    "sar_pusb": label_sar_pusb,
 }
 
 
@@ -69,10 +73,12 @@ def make_pu_split(
         True labels: 1 for positive, 0 for negative.
     label_frequency : float, default=0.5
         Fraction of the training positives to label, :math:`c = P(s = 1 \mid y = 1)`.
-    mechanism : {"scar", "sar_knn", "sar_propensity", "sar_cluster", "sar_confidence"}
-        Labeling mechanism, ``"scar"`` by default: :func:`label_scar`, :func:`label_sar_knn`,
-        :func:`label_sar_propensity`, :func:`label_sar_cluster` or
-        :func:`label_sar_confidence`.
+    mechanism : str, default="scar"
+        Labeling mechanism: ``"scar"`` (:func:`label_scar`), ``"sar_knn"``
+        (:func:`label_sar_knn`), ``"sar_propensity"`` (:func:`label_sar_propensity`),
+        ``"sar_cluster"`` (:func:`label_sar_cluster`), ``"sar_confidence"``
+        (:func:`label_sar_confidence`), ``"sar_lbe"`` (:func:`label_sar_lbe`) or
+        ``"sar_pusb"`` (:func:`label_sar_pusb`).
     test_size : float or int, default=0.25
         Fraction (float) or number (int) of samples in the test set.
     random_state : int, RandomState instance or None, default=None

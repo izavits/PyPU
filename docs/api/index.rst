@@ -134,6 +134,8 @@ Labeling mechanisms
    label_sar_propensity
    label_sar_cluster
    label_sar_confidence
+   label_sar_lbe
+   label_sar_pusb
 
 Label frequency and summaries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
