@@ -7,7 +7,7 @@ labeling mechanism, and it matters: most PU methods assume that the labeled posi
 chosen completely at random (SCAR), and their estimates are biased when they are not (SAR,
 selected at random given the features).
 
-:mod:`pypu.datasets` makes PU data from a fully labeled dataset with one SCAR and four SAR
+:mod:`pypu.datasets` makes PU data from a fully labeled dataset with one SCAR and seven SAR
 mechanisms, so that methods can be tested under each. This example shows what each one
 does.
 """
@@ -26,7 +26,9 @@ from pypu.datasets import (
     label_sar_cluster,
     label_sar_confidence,
     label_sar_knn,
+    label_sar_lbe,
     label_sar_propensity,
+    label_sar_pusb,
     label_scar,
     make_pu_split,
     pu_summary,
@@ -45,6 +47,13 @@ mechanisms = {
     "SAR confidence: the easy ones": label_sar_confidence(
         X, y, label_frequency=0.3, random_state=0
     ),
+    "SAR LBE-A: mostly the easy ones": label_sar_lbe(
+        X, y, label_frequency=0.3, bias="easy", random_state=0
+    ),
+    "SAR LBE-B: the ambiguous ones": label_sar_lbe(
+        X, y, label_frequency=0.3, bias="hard", random_state=0
+    ),
+    "SAR PUSB: accepted by posterior": label_sar_pusb(X, y, label_frequency=0.3, random_state=0),
 }
 
 # %%
@@ -58,8 +67,14 @@ mechanisms = {
 #   clusters of the positive class.
 # - :func:`~pypu.datasets.label_sar_confidence` labels mostly the positives that a
 #   classifier recognises easily (``bias="easy"``) or poorly (``bias="hard"``).
+# - :func:`~pypu.datasets.label_sar_lbe` does the same with the much stronger bias of the
+#   LBE labeling schemes, as in the PU-Bench benchmark: LBE-A (``bias="easy"``) and LBE-B
+#   (``bias="hard"``).
+# - :func:`~pypu.datasets.label_sar_pusb` accepts each positive with a probability that
+#   grows with a classifier's posterior, then labels some of the accepted ones, as in the
+#   experiments of PUSB.
 
-fig, axes = plt.subplots(2, 3, figsize=(13, 8.4), sharex=True, sharey=True, layout="constrained")
+fig, axes = plt.subplots(3, 3, figsize=(13, 12.6), sharex=True, sharey=True, layout="constrained")
 axes = axes.ravel()
 axes[0].scatter(*X[y == 0].T, s=8, c="tab:blue", label="negative")
 axes[0].scatter(*X[y == 1].T, s=8, c="tab:orange", label="positive")

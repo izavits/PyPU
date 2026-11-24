@@ -61,6 +61,10 @@ the labeled positives are a random sample of the positives, so:
   and {func}`~pypu.metrics.pu_roc_auc_score`. For example, the precision is
   $\pi r / P(\hat y = 1)$, where $r$ is the recall on the labeled positives and
   $P(\hat y = 1)$ the share of samples predicted positive;
+- with the prior too, {func}`~pypu.metrics.pu_accuracy_score` estimates the **accuracy** as
+  $2 \pi r + P(\hat y = 0) - \pi$: the *proxy accuracy* of Wang et al. [^wang] minus $\pi$.
+  It also takes case-control data, with `scenario="case_control"`; $P(\hat y = 0)$ is then
+  the share of the unlabeled samples predicted negative;
 - without the prior, {func}`~pypu.metrics.lee_liu_score`, $r^2 / P(\hat y = 1)$, equals
   $\text{precision} \cdot \text{recall} / \pi$ [^leeliu]. For a fixed dataset it ranks
   classifiers like the product of precision and recall. It is not bounded by 1, so
@@ -69,21 +73,23 @@ the labeled positives are a random sample of the positives, so:
 Here the test set gets PU labels too, to compare each estimate with the true value:
 
 ```pycon
->>> from sklearn.metrics import precision_score, recall_score
+>>> from sklearn.metrics import accuracy_score, precision_score, recall_score
 >>> from pypu.datasets import label_scar
->>> from pypu.metrics import pu_f1_score, pu_precision_score
+>>> from pypu.metrics import pu_accuracy_score, pu_f1_score, pu_precision_score
 >>> from pypu.metrics import pu_recall_score, pu_roc_auc_score
 >>> s_test = label_scar(y_test, label_frequency=0.5, random_state=1)
 >>> true = {
 ...     "recall": recall_score(y_test, y_pred),
 ...     "precision": precision_score(y_test, y_pred),
 ...     "F1": f1_score(y_test, y_pred),
+...     "accuracy": accuracy_score(y_test, y_pred),
 ...     "ROC AUC": roc_auc_score(y_test, scores),
 ... }
 >>> estimated = {
 ...     "recall": pu_recall_score(s_test, y_pred),
 ...     "precision": pu_precision_score(s_test, y_pred, prior),
 ...     "F1": pu_f1_score(s_test, y_pred, prior),
+...     "accuracy": pu_accuracy_score(s_test, y_pred, prior),
 ...     "ROC AUC": pu_roc_auc_score(s_test, scores, prior),
 ... }
 >>> for name in true:
@@ -91,13 +97,18 @@ Here the test set gets PU labels too, to compare each estimate with the true val
 recall    true 0.83  estimated 0.85
 precision true 0.96  estimated 0.99
 F1        true 0.89  estimated 0.92
+accuracy  true 0.92  estimated 0.94
 ROC AUC   true 0.98  estimated 0.97
+>>> round(roc_auc_score(s_test, scores), 2)  # labeled against unlabeled samples
+0.87
 ```
 
-With only 27 labeled positives in the test set the estimates are noisy, but close. Note
-that the plain AUC of separating labeled from unlabeled samples would be far lower, as
+With only 27 labeled positives in the test set the estimates are noisy, but close. The
+plain AUC of separating labeled from unlabeled samples, on the last line, is far lower, as
 the unlabeled set contains positives; {func}`~pypu.metrics.pu_roc_auc_score` corrects for
-them.
+them. That plain AUC is the *proxy AUC* of Wang et al. [^wang]: it needs no prior and,
+under SCAR, grows with the true AUC, so it still ranks models correctly; only its value is
+off.
 
 ## Tuning a model from PU labels
 
@@ -135,7 +146,7 @@ and the prior are made the same way:
 ```
 
 Choose the criterion by what the model is for: the ROC AUC estimate for a ranking, Lee
-and Liu's criterion or the F1 estimate for labels. The example
+and Liu's criterion, or the F1 or accuracy estimate, for labels. The example
 [Tuning a model without true labels](../auto_examples/getting_started/plot_model_selection.rst)
 compares the estimates with the true scores over a whole grid.
 
@@ -152,3 +163,6 @@ compares the estimates with the true scores over a whole grid.
 
 [^leeliu]: W. S. Lee and B. Liu. "Learning with positive and unlabeled examples using
     weighted logistic regression." ICML, 2003.
+
+[^wang]: W. Wang, D.-D. Wu, M. Li, J. Zhang, G. Niu and M. Sugiyama. "Accessible,
+    realistic, and fair evaluation of positive-unlabeled learning algorithms." ICLR, 2026.

@@ -104,6 +104,76 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+## PU-Bench
+
+- **Used in:** `src/pypu/datasets/_labeling.py` (`label_sar_lbe`, `label_sar_pusb`): the
+  draw probabilities of the LBE-A and LBE-B labeling mechanisms and the classifier
+  posterior they start from, after `create_pu_training_set` in `data/data_utils.py`. The
+  tests (`tests/datasets/test_labeling.py`, `tests/metrics/test_pu_labels.py`) compare
+  against copies of PU-Bench's code.
+- **Source:** https://github.com/XiXiphus/PU-Bench, the code of "PU-Bench: a unified
+  benchmark for rigorous and reproducible PU learning" (Q. Chen, H. Zhang, L. Zhang, C. Li,
+  J. Wang and W. Wang, ICLR 2026).
+- **License:** MIT.
+
+```
+MIT License
+
+Copyright (c) 2026 XiXiphus
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+## PUlearning (nnPUSB)
+
+- **Used in:** `src/pypu/datasets/_labeling.py` (`label_sar_pusb`): the accept-reject rule
+  that labels positives, from `BiasedPUlearning/nnPUSB/main_nnPUSB_mnist.py`. The tests
+  (`tests/datasets/test_labeling.py`) compare against a copy of it.
+- **Source:** https://github.com/MasaKat0/PUlearning, by MasaKat0, with the code of
+  "Learning from positive and unlabeled data with a selection bias" (M. Kato, T. Teshima
+  and J. Honda, ICLR 2019).
+- **License:** MIT.
+
+```
+MIT License
+
+Copyright (c) 2018 MasaKat0
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ## Kernel mixture proportion estimation (KM)
 
 - **Used in:** `src/pypu/prior/_km.py` (`KMPrior`, and `PUe` when no prior is given), kept

@@ -154,12 +154,25 @@ details.
   (`negatives="1dnf"`) suits binary or count features, such as word counts; on ordinary
   continuous features it finds no reliable negatives.
 
-## Data and class-prior estimation
+## Data, metrics and class-prior estimation
 
 - {func}`~pypu.datasets.label_sar_knn`: the original experiments averaged the distance to
   the first negatives in row order rather than the nearest ones. PyPU uses the nearest;
   `legacy=True` reproduces the original labels, and `label_scar(..., legacy=True)` the
   original SCAR labels.
+- {func}`~pypu.datasets.label_sar_lbe` and {func}`~pypu.datasets.label_sar_pusb` follow
+  PU-Bench's code: a logistic regression fitted and evaluated on all the samples, PU-Bench's
+  draw probabilities for LBE-A and LBE-B, and the accept-reject rule of the nnPUSB code for
+  PUSB. PU-Bench labels `floor(c * n_positive)` positives and draws from NumPy's newer
+  `Generator`; PyPU labels `round(c * n_positive)`, as its other mechanisms do, and draws
+  from a `RandomState`, so the labels differ from PU-Bench's for the same seed. PUSB's draws
+  are those of the nnPUSB code, which used NumPy's global `RandomState`.
+- {func}`~pypu.metrics.pu_accuracy_score` follows the definition and proof of the proxy
+  accuracy in Wang et al.'s paper, not their code. For single-training-set data, the code
+  released with the paper, and PU-Bench, add to $2 \pi r$ the share of samples whose prediction agrees with
+  their PU label instead of the share predicted negative. That version is not the accuracy
+  plus a constant: it also rewards recall, and it can rank two classifiers against their
+  accuracy. For case-control data the two agree.
 - {class}`~pypu.prior.BBEPrior` and {class}`~pypu.prior.ElkanNotoPrior` are implemented
   from the papers. {class}`~pypu.prior.KMPrior` is the authors' code, unchanged; its solver,
   CVXOPT, is licensed under the GPL-3.0 and is an optional extra. Its estimates are

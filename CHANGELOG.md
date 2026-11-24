@@ -9,6 +9,34 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+### Added
+
+- Two labeling mechanisms in `pypu.datasets`, the SAR mechanisms of the PU-Bench
+  benchmark (Chen et al., ICLR 2026), also available in `make_pu_split` as
+  `mechanism="sar_lbe"` and `"sar_pusb"`. Both use the posterior of a classifier fitted on
+  all the samples, a logistic regression by default (`estimator=`):
+  - `label_sar_lbe`, the LBE labeling schemes: positives drawn with probability
+    proportional to `0.9 p^10 / sum(p^10) + 0.1 / n_positive` (`bias="easy"`, LBE-A) or to
+    `(2.5 - p)^10` (`bias="hard"`, LBE-B), a much stronger bias than
+    `label_sar_confidence`'s.
+  - `label_sar_pusb`, the labeling of the PUSB experiments (Kato et al., ICLR 2019): each
+    positive accepted with probability `p / max(p)`, and the labeled ones drawn from the
+    accepted. It warns when fewer positives are accepted than `label_frequency` asks for,
+    and then labels them all.
+- `pu_accuracy_score` in `pypu.metrics`, an estimate of the accuracy from PU labels and the
+  class prior: the proxy accuracy of Wang et al. (ICLR 2026) minus the prior, for
+  single-training-set data or, with `scenario="case_control"`, case-control data. It
+  follows the paper's definition, which for single-training-set data differs from the code
+  released with the paper and from PU-Bench's (see the implementation notes).
+- The user guide explains the new mechanisms and the accuracy estimate, and that the plain
+  AUC of labeled against unlabeled samples is the paper's proxy AUC. The labeling
+  mechanisms example shows the new mechanisms.
+
+### Changed
+
+- The author's name is written Elias Zavitsanos in the package metadata, the license, the
+  citation file and the documentation.
+
 ## [0.7.0] - 2026-11-20
 
 IFPNU's first-step detectors by name, and ports of the extended isolation forest and

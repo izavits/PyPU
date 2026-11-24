@@ -142,6 +142,8 @@ The labeling mechanism decides which positives get labeled:
 | `label_sar_propensity` (`"sar_propensity"`) | Each labeled with a known logistic propensity on chosen features, which can be returned |
 | `label_sar_cluster` (`"sar_cluster"`) | Taken from only some k-means clusters of the positives |
 | `label_sar_confidence` (`"sar_confidence"`) | Mostly the ones a classifier recognises easily (`bias="easy"`) or poorly (`bias="hard"`) |
+| `label_sar_lbe` (`"sar_lbe"`) | The same with a much stronger bias: PU-Bench's LBE-A (`bias="easy"`) and LBE-B (`bias="hard"`) |
+| `label_sar_pusb` (`"sar_pusb"`) | Accepted with a probability that grows with a classifier's posterior, as in the PUSB experiments |
 
 `label_frequency` is the fraction of positives that get labeled. To set the share of
 positives among the unlabeled samples instead, convert it with
@@ -157,9 +159,10 @@ scenario, where the unlabeled set is a separate sample with the population's cla
   They rank the scores, so they suit PU methods whose scores are not calibrated
   probabilities. scikit-learn's ROC AUC and average precision apply as they are.
 - **From PU labels alone**, for model selection when no true labels exist: `lee_liu_score`
-  needs nothing else, while `pu_recall_score`, `pu_precision_score`, `pu_f1_score` and
-  `pu_roc_auc_score` estimate the usual metrics given the class prior. They assume SCAR
-  labels and work as scikit-learn scorers:
+  needs nothing else, while `pu_recall_score`, `pu_precision_score`, `pu_f1_score`,
+  `pu_accuracy_score` (by the proxy accuracy of Wang et al., ICLR 2026, also for
+  case-control data) and `pu_roc_auc_score` estimate the usual metrics given the class
+  prior. They assume SCAR labels and work as scikit-learn scorers:
 
 ```python
 from sklearn.datasets import make_classification

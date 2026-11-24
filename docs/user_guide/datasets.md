@@ -49,11 +49,15 @@ arguments:
 | {func}`~pypu.datasets.label_sar_propensity` (`"sar_propensity"`) | each labeled with a known logistic propensity of chosen features | `features`, `coef`, `strength` |
 | {func}`~pypu.datasets.label_sar_cluster` (`"sar_cluster"`) | taken from only some k-means clusters of the positives | `n_clusters` |
 | {func}`~pypu.datasets.label_sar_confidence` (`"sar_confidence"`) | mostly the ones a classifier recognises easily, or poorly | `bias="easy"` or `"hard"`, `estimator` |
+| {func}`~pypu.datasets.label_sar_lbe` (`"sar_lbe"`) | the same, with a much stronger bias: the LBE labeling schemes | `bias="easy"` or `"hard"`, `estimator` |
+| {func}`~pypu.datasets.label_sar_pusb` (`"sar_pusb"`) | accepted with a probability that grows with a classifier's posterior, as for PUSB | `estimator` |
 
 SCAR labels test a method under its usual assumption. The SAR mechanisms test it on
 biased labels, each in its own way: labels near or far from the class boundary, labels
 driven by a few features, whole kinds of positives never labeled, or only the obvious (or
-only the ambiguous) cases labeled.
+only the ambiguous) cases labeled. `"sar_lbe"` and `"sar_pusb"` are the SAR mechanisms of
+the PU-Bench benchmark [^pubench], for results comparable with it. `"sar_pusb"` labels only
+the positives it accepts, and warns when they are fewer than `label_frequency` asks for.
 
 Under SAR, the labeled positives differ from the positives that stay hidden. Here the
 propensity grows with the first feature, the mean radius of the tumour, so the labeled
@@ -89,8 +93,10 @@ recovers it. Its mean over the positives is the label frequency:
 
 {func}`~pypu.datasets.label_sar_knn` and {func}`~pypu.datasets.label_sar_cluster` compute
 distances on the features as given, so standardize features with different units first.
-`label_scar` and `label_sar_knn` take `legacy=True` to reproduce the labels of the
-original iFPU and iFPNU experiments.
+The mechanisms based on a classifier fit a logistic regression by default, which may not
+converge on unscaled features: pass `estimator=make_pipeline(StandardScaler(),
+LogisticRegression())` instead. `label_scar` and `label_sar_knn` take `legacy=True` to
+reproduce the labels of the original iFPU and iFPNU experiments.
 
 The example
 [Which positives get labeled](../auto_examples/getting_started/plot_labeling_mechanisms.rst)
@@ -142,3 +148,8 @@ drops some negatives, so that the unlabeled part has the prior of `y`:
 It does not split the data: to keep a test set, split first, for example with
 {func}`~sklearn.model_selection.train_test_split`, and make case-control data from the
 training part.
+
+## References
+
+[^pubench]: Q. Chen, H. Zhang, L. Zhang, C. Li, J. Wang and W. Wang. "PU-Bench: a unified
+    benchmark for rigorous and reproducible PU learning." ICLR, 2026.

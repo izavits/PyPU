@@ -65,6 +65,8 @@ New:
   more likely to be labeled.
 - `make_case_control`: every positive kept, negatives subsampled so the unlabeled set has the
   class prior of the data.
+- `label_sar_lbe` and `label_sar_pusb` (after 0.7.0): the SAR mechanisms of PU-Bench, LBE-A,
+  LBE-B and PUSB, from an in-sample classifier posterior (porting note 15).
 - `make_pu_split`: stratified train/test split with PU labels on the training part only.
 - `pu_summary`: true prior, label frequency and pollution of the unlabeled set.
 
@@ -78,7 +80,9 @@ and the best F1 over thresholds.
 
 New: Lee and Liu's criterion, and estimates of recall, precision, F1 and ROC AUC from PU
 labels and the class prior (Jain, White and Radivojac, AAAI 2017), usable as scikit-learn
-scorers for model selection without true labels.
+scorers for model selection without true labels. After 0.7.0: `pu_accuracy_score`, the
+proxy accuracy of Wang et al. (ICLR 2026) minus the prior, for single-training-set and
+case-control data (porting note 15).
 
 ## Class-prior estimation (`pypu.prior`, 0.1.0): done
 
@@ -416,6 +420,41 @@ trees ran both with linear SVMs.
       random merges, with `opt_tree`'s `random.random` drawn from NumPy for `branch=0`).
       Defaults are the experiments' settings, including `branch=20` (upstream's default
       is 0).
+15. **PU-Bench's labeling mechanisms and proxy accuracy (resolved).** Sources:
+    `create_pu_training_set` and `_select_sar_pusb_positives` in PU-Bench's
+    `data/data_utils.py` (github.com/XiXiphus/PU-Bench, MIT), `main_nnPUSB_mnist.py` in
+    `BiasedPUlearning/nnPUSB/` of github.com/MasaKat0/PUlearning (MIT), and the proxy
+    accuracy of Wang et al. (Definition 1 and Appendix B.1 of "Accessible, realistic, and
+    fair evaluation of positive-unlabeled learning algorithms", ICLR 2026), with its code in
+    PU-Bench's `train/utils/metrics.py` and the authors' github.com/wu-dd/PUBench
+    (`lib/misc.py`, no license stated).
+    - `label_sar_lbe` and `label_sar_pusb` follow PU-Bench as run: a logistic regression
+      (default settings, `max_iter=100`) fitted on all the samples and their true labels,
+      and its in-sample posterior `p` of the positives. LBE-A draws without replacement with
+      probability `0.9 p^10 / sum(p^10) + 0.1 / n_positive`, LBE-B with probability
+      proportional to `(1.5 + 1.0 - p)^10` (PU-Bench attributes the power 10 to the LBE
+      paper and the 1.0 to the `ShrinkCoef` of the LBE code; the paper itself could not be
+      checked, its PDF being too large to fetch). PUSB accepts each positive with
+      probability `p / mean(p) / max(p / mean(p))`, then keeps the first ones of a random
+      permutation of the accepted. The tests compare these probabilities with copies of
+      PU-Bench's and the nnPUSB code to the last bit.
+    - Differences: PyPU labels `round(c * n_positive)` positives, as its other mechanisms,
+      where PU-Bench takes `int(c * n_positive)`; and it draws from a `RandomState`, where
+      PU-Bench uses a `Generator`, so the labels differ from PU-Bench's for the same seed.
+      PUSB's draws are those of the nnPUSB code, which used NumPy's global `RandomState`:
+      the tests reproduce them from the same seed. PUSB may accept fewer positives than
+      requested; PyPU then labels them all and warns, where the original did so silently. Only
+      the single-training-set scenario is covered; PU-Bench also applies the mechanisms to
+      case-control data.
+    - `pu_accuracy_score` follows the paper, not the released code. For single-training-set
+      data (OS), the paper's PA is `2 pi r + P(y_pred = 0)` over all the samples, with
+      `E[PA] = accuracy + pi` (Appendix B.1). The authors' code, which PU-Bench copied,
+      adds `(correct_p + correct_u) / (n_p + n_u)` instead, counting the labeled samples
+      predicted positive; its expectation is `accuracy + pi (1 - c) + 2 pi c r`, which
+      rewards recall: on a simulated pair of classifiers it ranks them against their
+      accuracy, which a test records. For case-control data (TS) the code matches the
+      paper. PyPU returns PA minus the prior, an estimate of the accuracy, clipped to
+      `[0, 1]` like the other estimates.
 
 ## Validating ports
 
