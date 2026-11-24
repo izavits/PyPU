@@ -9,8 +9,9 @@ With the true labels of a test set (scores ranked, no fixed threshold needed):
 From PU labels alone, for model selection when the true labels are unknown:
 
 - :func:`lee_liu_score`, which needs no class prior.
-- :func:`pu_recall_score`, :func:`pu_precision_score`, :func:`pu_f1_score` and
-  :func:`pu_roc_auc_score`, estimates of the usual metrics given the class prior.
+- :func:`pu_recall_score`, :func:`pu_precision_score`, :func:`pu_f1_score`,
+  :func:`pu_accuracy_score` and :func:`pu_roc_auc_score`, estimates of the usual metrics
+  given the class prior.
 
 Standard metrics such as :func:`sklearn.metrics.roc_auc_score` and
 :func:`sklearn.metrics.average_precision_score` apply as they are when true labels are known.
@@ -18,6 +19,7 @@ Standard metrics such as :func:`sklearn.metrics.roc_auc_score` and
 
 from pypu.metrics._pu_labels import (
     lee_liu_score,
+    pu_accuracy_score,
     pu_f1_score,
     pu_precision_score,
     pu_recall_score,
@@ -36,6 +38,7 @@ __all__ = [
     "lee_liu_score",
     "max_f1_score",
     "precision_at_k",
+    "pu_accuracy_score",
     "pu_f1_score",
     "pu_precision_score",
     "pu_recall_score",

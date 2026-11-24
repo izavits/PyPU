@@ -179,6 +179,7 @@ From PU labels alone
    pu_precision_score
    pu_recall_score
    pu_f1_score
+   pu_accuracy_score
    pu_roc_auc_score
 
 Class-prior estimation
