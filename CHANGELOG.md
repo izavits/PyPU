@@ -9,6 +9,10 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-27
+
+PU Extra Trees: extremely randomized trees grown on the nnPU or uPU risk.
+
 ### Added
 
 - `PUExtraTrees` in `pypu.models`, PU Extra Trees (Wilton et al., NeurIPS 2022): a forest
@@ -326,7 +330,8 @@ evaluation metrics (including estimates from PU labels alone) and class-prior es
 - `pypu.utils.check_pu_labels`, `pypu.utils.check_prior`, `pypu.utils.threshold_from_prior`
   and `pypu.show_versions()`.
 
-[Unreleased]: https://github.com/izavits/PyPU/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/izavits/PyPU/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/izavits/PyPU/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/izavits/PyPU/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/izavits/PyPU/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/izavits/PyPU/compare/v0.6.1...v0.6.2
