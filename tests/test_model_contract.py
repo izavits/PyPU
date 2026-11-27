@@ -38,6 +38,9 @@ MODEL_PARAMS = {
     "IFPNU": {"prior": 0.3},
     "PUHellingerTree": {"prior": 0.3},
     "PUHellingerForest": {"prior": 0.3, "n_estimators": 10},
+    # The checks' data have up to 75% labeled samples, more than a prior of 0.3 allows in
+    # the single-training-set scenario.
+    "PUExtraTrees": {"prior": 0.3, "scenario": "case_control", "n_estimators": 10},
     "UPUBoost": {"prior": 0.3, "n_estimators": 10},
     "NNPUBoost": {"prior": 0.3, "n_estimators": 10},
     "ImbalancedNNPUBoost": {"prior": 0.3, "n_estimators": 10},

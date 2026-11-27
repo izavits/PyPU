@@ -32,6 +32,7 @@ _MODELS: dict[str, str] = {
     "PropensityWeightedPU": "pypu.models.propensity_weighting",
     "PUBagging": "pypu.models.bagging",
     "PUe": "pypu.models.pue",
+    "PUExtraTrees": "pypu.models.extra_trees",
     "PUHellingerForest": "pypu.models.hellinger",
     "PUHellingerTree": "pypu.models.hellinger",
     "RankPruning": "pypu.models.rank_pruning",
@@ -54,6 +55,7 @@ __all__ = [
     "NNPUBoost",
     "NaivePU",
     "PUBagging",
+    "PUExtraTrees",
     "PUHellingerForest",
     "PUHellingerTree",
     "PUe",
@@ -69,6 +71,7 @@ if TYPE_CHECKING:
     from pypu.models.bagging import PUBagging
     from pypu.models.biased_svm import BiasedSVM
     from pypu.models.elkan_noto import ElkanNoto
+    from pypu.models.extra_trees import PUExtraTrees
     from pypu.models.hellinger import PUHellingerForest, PUHellingerTree
     from pypu.models.ifpnu import IFPNU
     from pypu.models.ifpu import IFPU

@@ -48,6 +48,7 @@ Ensembles and trees
    PUBagging
    PUHellingerTree
    PUHellingerForest
+   PUExtraTrees
 
 SVMs
 ~~~~
