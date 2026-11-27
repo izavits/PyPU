@@ -295,6 +295,25 @@ def original_arrays(tree):
     return {name: np.array(values, dtype=float) for name, values in arrays.items()}
 
 
+def reference_proba(tree, X):
+    """The reference tree's ``predict_proba``, with 1 in leaves without unlabeled samples.
+
+    There ``vstar`` is infinite: PU-Bench counts 0.5, PyPU 1, the leaf's vote in the
+    original code.
+    """
+    proba = tree.predict_proba(X)[:, 1]
+    leaf_vstar = np.empty(len(X))
+    for i, x in enumerate(X):
+        depth, position = 0, 0
+        while not tree.nodes[depth, position]["is_leaf"]:
+            node = tree.nodes[depth, position]
+            depth, position = depth + 1, 2 * position + (x[node["j"]] > node["xi"])
+        leaf_vstar[i] = tree.nodes[depth, position]["vstar"]
+    no_unlabeled = leaf_vstar == np.inf
+    np.testing.assert_array_equal(proba[no_unlabeled], 0.5)
+    return np.where(no_unlabeled, 1.0, proba)
+
+
 def assert_same_tree(tree, reference):
     expected = original_arrays(reference)
     np.testing.assert_array_equal(tree.children_left, expected["left"])
@@ -379,7 +398,7 @@ def test_tree_reproduces_the_original_implementation(plain, ties, case, seed):
     reference = original_tree(X, s, prior, seed, **params)
     tree = build_tree(X, s == 1, prior, seed, **ported_params({**params, "n_features": X.shape[1]}))
     assert_same_tree(tree, reference)
-    np.testing.assert_array_equal(tree.value[tree.apply(X)], reference.predict_proba(X)[:, 1])
+    np.testing.assert_array_equal(tree.value[tree.apply(X)], reference_proba(reference, X))
 
 
 def test_ties_draw_like_the_original(ties):
@@ -412,8 +431,9 @@ def test_forest_reproduces_the_original_implementation(plain, params):
     ]
     for tree, reference in zip(model.trees_, trees, strict=True):
         assert_same_tree(tree, reference)
-    # PU-Bench's PUExtraTrees.predict_proba and the original feature_importances.
-    expected_proba = np.mean([tree.predict_proba(X) for tree in trees], axis=0)[:, 1]
+    # The mean of PU-Bench's PUExtraTrees.predict_proba, as reference_proba changes it, and
+    # the original feature_importances.
+    expected_proba = np.mean([reference_proba(tree, X) for tree in trees], axis=0)
     np.testing.assert_array_equal(model.predict_proba(X)[:, 1], expected_proba)
     expected_importances = np.zeros(X.shape[1])
     for tree in trees:
@@ -441,7 +461,7 @@ def test_single_scenario_needs_a_prior_above_the_labeled_fraction(plain):
 
 
 def test_leaf_probabilities(plain):
-    """Clipped at 1, and 0.5 in leaves without unlabeled samples, as PU-Bench."""
+    """Clipped at 1, and 1 in leaves without unlabeled samples, where PU-Bench gives 0.5."""
     X, y, s = plain
     model = PUExtraTrees(prior=y.mean(), n_estimators=5, random_state=0).fit(X, s)
     kinds = np.zeros(3, dtype=int)
@@ -449,7 +469,7 @@ def test_leaf_probabilities(plain):
         leaves = tree.feature == _LEAF
         np.testing.assert_array_equal(np.isnan(tree.value), ~leaves)
         no_unlabeled = leaves & (tree.vstar == np.inf)
-        np.testing.assert_array_equal(tree.value[no_unlabeled], 0.5)
+        np.testing.assert_array_equal(tree.value[no_unlabeled], 1.0)
         over = leaves & (tree.vstar > 1) & ~no_unlabeled
         np.testing.assert_array_equal(tree.value[over], 1.0)
         under = leaves & (tree.vstar <= 1)
@@ -458,6 +478,17 @@ def test_leaf_probabilities(plain):
     assert np.all(kinds > 0)
     expected = np.mean([tree.value[tree.apply(X)] for tree in model.trees_], axis=0)
     np.testing.assert_array_equal(model.predict_proba(X)[:, 1], expected)
+
+
+def test_upu_leaves_hold_only_labeled_or_only_unlabeled_samples(plain):
+    """So with PU-Bench's 0.5 for the labeled-only leaves, uPU would predict no positive."""
+    X, y, s = plain
+    model = PUExtraTrees(prior=y.mean(), n_estimators=5, risk_estimator="uPU", random_state=0)
+    model.fit(X, s)
+    for tree in model.trees_:
+        leaf_vstar = tree.vstar[tree.feature == _LEAF]
+        assert set(np.unique(leaf_vstar)) == {0.0, np.inf}
+    assert model.predict(X).sum() > 0
 
 
 def test_upu_importances_can_be_infinite(plain):

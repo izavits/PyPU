@@ -42,8 +42,8 @@ class Tree:
         code), which can exceed 1 and is infinite in leaves without unlabeled samples; NaN
         for internal nodes.
     value : ndarray of shape (n_nodes,)
-        Positive-class probability of each leaf: ``vstar`` clipped to ``[0, 1]``, and 0.5
-        where it is infinite, as in PU-Bench; NaN for internal nodes.
+        Positive-class probability of each leaf, ``vstar`` clipped to ``[0, 1]`` (1 where it
+        is infinite); NaN for internal nodes.
     risk_reduction : ndarray of shape (n_nodes,)
         Decrease of the risk achieved by each node's split, 0 for leaves.
     """
@@ -108,7 +108,7 @@ class PUExtraTrees(BasePUClassifier):
 
     The trees are those of the authors' code [2]_ for the same data and seed, with the labeled
     samples as the positive set and the unlabeled samples as the unlabeled set, as PU-Bench
-    [3]_ runs it; the probabilities are PU-Bench's addition to that code.
+    [3]_ runs it; the probabilities follow PU-Bench's addition to that code (see Notes).
 
     Parameters
     ----------
@@ -180,9 +180,12 @@ class PUExtraTrees(BasePUClassifier):
     Notes
     -----
     ``predict_proba`` is the mean over the trees of the leaf estimates :math:`v^*`, clipped
-    to ``[0, 1]``, as PU-Bench computes it; a leaf without unlabeled samples, where
-    :math:`v^*` is infinite, counts as 0.5. ``predict`` thresholds it at 0.5. The original
-    code predicts instead by a majority vote of the trees, each predicting positive where
+    to ``[0, 1]``, as PU-Bench computes it, except in leaves without unlabeled samples:
+    there :math:`v^*` is infinite and PU-Bench counts 0.5, PyPU 1, as the leaf's vote in the
+    original code. With ``risk_estimator="uPU"`` the trees grow until each leaf holds only
+    labeled or only unlabeled samples, so PU-Bench's rule would keep every probability at
+    or below 0.5. ``predict`` thresholds the probability at 0.5. The original code predicts
+    instead by a majority vote of the trees, each predicting positive where
     :math:`v^* > 0.5`; the two can differ near the decision boundary.
 
     In the uPU risk, a leaf holding labeled samples only has risk :math:`-\infty` with the
@@ -425,8 +428,8 @@ def build_tree(
         stack.append((left, depth + 1, rows[mask]))
 
     vstar = np.array(vstar_leaf)
-    with np.errstate(invalid="ignore"):
-        value = np.where(vstar == np.inf, 0.5, np.clip(vstar, 0.0, 1.0))
+    # Infinite in leaves without unlabeled samples, which then count as positive.
+    value = np.clip(vstar, 0.0, 1.0)
     return Tree(
         children_left=np.array(children_left, dtype=np.intp),
         children_right=np.array(children_right, dtype=np.intp),
