@@ -1,5 +1,10 @@
 """PU Extra Trees: extremely randomized trees grown on a PU risk."""
 
+# Ported from the PU Extra Trees code of Jonathan Wilton (Copyright (c) 2024 Jonathan Wilton,
+# MIT License), as PU-Bench runs it, with the leaf probabilities PU-Bench adds (Copyright (c)
+# 2026 XiXiphus, MIT License). It keeps the original's order of growth, arithmetic and random
+# draws, so that the trees match it. See THIRD_PARTY_NOTICES.md.
+
 from __future__ import annotations
 
 import numbers

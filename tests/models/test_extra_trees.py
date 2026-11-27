@@ -18,6 +18,9 @@ class OriginalPUExtraTree:
     The logic is copied unchanged for the uPU and nnPU risks; the supervised (PN) branches,
     the methods not used here, comments, docstrings and formatting differ. It draws from
     NumPy's global generator.
+
+    Copyright (c) 2024 Jonathan Wilton; PU-Bench's additions Copyright (c) 2026 XiXiphus.
+    Both are MIT licensed; the license texts are in THIRD_PARTY_NOTICES.md.
     """
 
     def __init__(
