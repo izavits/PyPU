@@ -33,7 +33,7 @@ One example per model in ``models/``:
 - Reliable negatives and pruning: ``plot_spy_pu.py``, ``plot_pebl.py``,
   ``plot_rank_pruning.py``, ``plot_ifpnu.py``.
 - Ensembles and trees: ``plot_pu_bagging.py``, ``plot_pu_hellinger_tree.py``,
-  ``plot_pu_hellinger_forest.py``.
+  ``plot_pu_hellinger_forest.py``, ``plot_pu_extra_trees.py``.
 - SVMs: ``plot_biased_svm.py``.
 - PU risks and losses: ``plot_upu_boost.py``, ``plot_nnpu_boost.py``,
   ``plot_imbalanced_nnpu_boost.py`` (XGBoost), ``plot_ifpu.py``, ``plot_almpu.py``

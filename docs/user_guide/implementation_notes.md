@@ -136,6 +136,28 @@ details.
   folds), and gives the original's results to the last bit. A given `prior` sets the share
   of positives left unlabeled, which the package otherwise estimates.
 
+### PUExtraTrees
+
+- It ports the authors' tree code as PU-Bench runs it: the labeled samples are the positive
+  set, the unlabeled samples the unlabeled set, and the risk uses the share of positives
+  among the unlabeled samples (`unlabeled_prior_`), derived from `prior`, or `prior`
+  itself with `scenario="case_control"`. The defaults are those of the authors' code: 100
+  trees, the nnPU risk, the quadratic loss, unlimited depth.
+- From the same seed, every tree is the original's, node for node. Each tree has its own
+  seed, so the results do not depend on `n_jobs`; the original drew every tree from
+  NumPy's global generator. The port is several times faster.
+- `predict_proba` is the mean of the leaves' estimates of the share of positives, clipped
+  to $[0, 1]$, as PU-Bench computes it, except in leaves without unlabeled samples, which
+  count as 1 (PU-Bench: 0.5). `predict` thresholds it at 0.5, where the original took a
+  majority vote of the trees; the two can differ near the decision boundary.
+- Prefer the default nnPU risk. The uPU risk can go below zero, so its trees split until
+  each leaf holds only labeled or only unlabeled samples: they learn the labeled samples,
+  not the positives.
+- As in the original, `min_samples_leaf` stops splitting nodes with that many samples or
+  fewer, but a split can leave fewer in a child, and `max_features="sqrt"` rounds up.
+  `feature_importances_` is the original's risk reduction, not normalized; with the uPU
+  risk it can be infinite. The original's supervised (PN) mode is not ported.
+
 ## Models implemented from the papers
 
 - **ElkanNoto** estimates the label frequency on out-of-fold scores. Its weighted form

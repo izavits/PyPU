@@ -9,6 +9,20 @@ the public API may change between minor versions; such changes are always listed
 
 ## [Unreleased]
 
+### Added
+
+- `PUExtraTrees` in `pypu.models`, PU Extra Trees (Wilton et al., NeurIPS 2022): a forest
+  of extremely randomized trees whose splits minimize the nnPU risk (default) or the uPU
+  risk, with the quadratic (default) or logistic loss. It ports the authors' code as
+  PU-Bench runs it, with the labeled samples as the positive set and the unlabeled samples
+  as the unlabeled set; from the same seed its trees are the original's, node for node.
+  `predict_proba` is the mean of the leaves' estimates of the share of positives, as in
+  PU-Bench, except that leaves without unlabeled samples count as 1 (PU-Bench: 0.5).
+  `scenario="case_control"` takes case-control data, where the prior is that of the
+  unlabeled samples. `feature_importances_` is the original's risk reduction.
+- An example for `PUExtraTrees`, which the comparison example and the user guide also
+  include.
+
 ## [0.8.0] - 2026-11-24
 
 PU-Bench's SAR labeling mechanisms (LBE-A, LBE-B and PUSB), and an estimate of the

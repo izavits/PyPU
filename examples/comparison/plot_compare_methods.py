@@ -41,6 +41,7 @@ from pypu.models import (
     NaivePU,
     PropensityWeightedPU,
     PUBagging,
+    PUExtraTrees,
     PUHellingerForest,
     PUHellingerTree,
     RankPruning,
@@ -77,6 +78,7 @@ def make_models(prior, label_frequency):
         "IFPNU": IFPNU(prior=prior, random_state=0),
         "PUHellingerTree": PUHellingerTree(prior=prior, random_state=0),
         "PUHellingerForest": PUHellingerForest(prior=prior, random_state=0),
+        "PUExtraTrees": PUExtraTrees(prior=prior, random_state=0),
     }
     if importlib.util.find_spec("xgboost") is not None:
         from pypu.models import ImbalancedNNPUBoost, NNPUBoost, UPUBoost

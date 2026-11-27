@@ -39,6 +39,7 @@ are identical to the copies in `pu_monorepo/iFPNU/`, so the monorepo is the sing
 | `LBE` | `pu_monorepo/iFPNU/models/LBE.py`, `models/helper_files/lbe/` | torch |
 | `PUe` | `pu_monorepo/iFPNU/models/PUe.py`, `models/helper_files/km.py` | torch, cvxopt |
 | `ElkanNoto`, `PUBagging`, `RankPruning` | `pu_monorepo/PU_Hellinger_Trees/pos_noisyneg/` | scikit-learn |
+| `PUExtraTrees` | PU-Bench's `train/puet/` (github.com/XiXiphus/PU-Bench, MIT), the authors' github.com/jonathanwilton/PUExtraTrees (MIT, commit 5cb15d7) with leaf probabilities added | numpy, scikit-learn |
 | `RebalancedPU`, `PropensityWeightedPU`, `BiasedSVM`, `SpyPU`, `PEBL` | The papers, checked against the notebooks of github.com/hkiyomaru/pu-learning (MIT); `SpyPU` replaces the planned `SpyEM` of `pos_noisyneg/spyEM.py` (which needed pomegranate and imbalanced-learn) | scikit-learn |
 | Focal nnPU losses (not planned: network nnPU dropped) | `pu_monorepo/iFPNU/pu/losses.py` | torch |
 
@@ -456,6 +457,50 @@ trees ran both with linear SVMs.
       accuracy, which a test records. For case-control data (TS) the code matches the
       paper. PyPU returns PA minus the prior, an estimate of the accuracy, clipped to
       `[0, 1]` like the other estimates.
+16. **PU Extra Trees (resolved).** Sources: `tree.py` and `trees.py` of
+    github.com/jonathanwilton/PUExtraTrees (MIT, commit 5cb15d7, December 2024), the code of
+    Wilton, Koay, Ko, Xu and Ye, "Positive-unlabeled learning using random forests via
+    recursive greedy risk minimization" (NeurIPS 2022), and PU-Bench's copy in
+    `train/puet/` with its trainer. PU-Bench's copy adds the leaf estimate `vstar` and a
+    `predict_proba` (the mean over the trees of `vstar` clipped to `[0, 1]`, 0.5 where it is
+    infinite), and accepts more `max_features` values. Decided with the author on
+    2026-11-27:
+    - Data as PU-Bench feeds them: the labeled samples are `P`, the unlabeled samples `U`,
+      and `pi` is the share of positives among the unlabeled samples. With
+      `scenario="single"` (default) PyPU derives it from the class prior as
+      `(prior * n - n_labeled) / (n - n_labeled)`, the value PU-Bench computes from the true
+      labels, and refuses a prior at or below the labeled fraction; with
+      `scenario="case_control"` it is `prior`. The authors' scripts fed `U` = all the
+      training samples instead; on two datasets both gave the same accuracy, F1 and AUC
+      within 0.005.
+      `scenario` was added because scikit-learn's estimator checks fit on data with up to
+      75% labeled samples; the model contract test runs `PUExtraTrees` case-control.
+    - `predict_proba` follows PU-Bench, except that leaves without unlabeled samples count
+      as 1 instead of 0.5, as the leaf's vote in the authors' code. With the uPU risk every
+      leaf holds only labeled or only unlabeled samples, so PU-Bench's 0.5 would keep every
+      probability at or below 0.5 and `predict` would label nothing positive (on the
+      example's data, F1 0 against 0.36 with 1, the F1 of the authors' majority vote). With
+      the nnPU risk the two rules differ by at most 0.001 in AUC, accuracy and F1 on the
+      datasets tried. `predict` thresholds the probability at 0.5 instead of the authors'
+      majority vote of the trees.
+    - Only the forest is public (`PUExtraTrees`); `n_estimators=1` gives the authors' single
+      tree, whose defaults are the same. The supervised (PN) mode is not ported.
+      `feature_importances_` is the authors' risk reduction, not normalized (infinite
+      with uPU when a split creates a leaf of risk `-inf`).
+    - The port is vectorized and grows trees iteratively, in the authors' recursion order,
+      drawing from one `RandomState` per tree in the authors' order (features, then split
+      points, and a coin flip in leaves with `vstar == 0.5`, which breaks the tie of the
+      leaf's vote). Seeding the authors' tree with `np.random.seed(seed)` gives the same
+      tree, node for node: `tests/models/test_extra_trees.py` compares them live against a
+      copy of PU-Bench's tree class, for both risks and losses, depth and leaf limits, several
+      split points per feature and tied leaves, and the forest's probabilities and
+      importances. Each tree's seed is drawn from `random_state`, as in scikit-learn's
+      forests, where the authors' forest drew all its trees from the global generator. The
+      authors' `min_samples_leaf` (a node with at most that many samples is not split) and
+      `max_features="sqrt"` (rounded up) are kept. A split point can round to the highest
+      value of a feature when its two highest values are adjacent floats, leaving an empty
+      child, where the authors' code fails; PyPU makes it a leaf. The port is 3 to 7 times
+      faster than the original on 2,000 to 10,000 samples.
 
 ## Validating ports
 

@@ -104,13 +104,52 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+## PU Extra Trees
+
+- **Used in:** `src/pypu/models/extra_trees.py` (`PUExtraTrees`): a vectorized port of the
+  tree growing, split risks, leaf estimates and risk-reduction importances of `tree.py` and
+  `trees.py`, drawing its random numbers in the same order. The tests
+  (`tests/models/test_extra_trees.py`) compare against a copy of the tree code, as PU-Bench
+  distributes it.
+- **Source:** https://github.com/jonathanwilton/PUExtraTrees (commit 5cb15d7), by Jonathan
+  Wilton, the code of "Positive-unlabeled learning using random forests via recursive
+  greedy risk minimization" (J. Wilton, A. M. Y. Koay, R. K. L. Ko, M. Xu and N. Ye,
+  NeurIPS 2022).
+- **License:** MIT.
+
+```
+MIT License
+
+Copyright (c) 2024 Jonathan Wilton
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ## PU-Bench
 
 - **Used in:** `src/pypu/datasets/_labeling.py` (`label_sar_lbe`, `label_sar_pusb`): the
   draw probabilities of the LBE-A and LBE-B labeling mechanisms and the classifier
   posterior they start from, after `create_pu_training_set` in `data/data_utils.py`. The
   tests (`tests/datasets/test_labeling.py`, `tests/metrics/test_pu_labels.py`) compare
-  against copies of PU-Bench's code.
+  against copies of PU-Bench's code. `src/pypu/models/extra_trees.py` (`PUExtraTrees`):
+  the data PU-Bench's `train/puet/trainer.py` gives PU Extra Trees, and the leaf
+  probabilities its copy of the trees adds.
 - **Source:** https://github.com/XiXiphus/PU-Bench, the code of "PU-Bench: a unified
   benchmark for rigorous and reproducible PU learning" (Q. Chen, H. Zhang, L. Zhang, C. Li,
   J. Wang and W. Wang, ICLR 2026).

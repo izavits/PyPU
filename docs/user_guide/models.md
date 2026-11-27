@@ -1,6 +1,6 @@
 # Choosing a model
 
-PyPU has twenty models, and none is best on every dataset. They all have the same
+PyPU has twenty-one models, and none is best on every dataset. They all have the same
 interface, so trying several is cheap: fit each on the same PU data and compare them.
 This page helps decide where to start.
 
@@ -13,13 +13,14 @@ positives are likely a biased sample, use a model of the propensity:
 {class}`~pypu.models.PUe`, or {class}`~pypu.models.PropensityWeightedPU` with a known
 propensity or SAREM's estimate. The other models were designed for SCAR labels.
 
-**Do you know the class prior?** Eight models require it, four use it when given, and the
+**Do you know the class prior?** Nine models require it, four use it when given, and the
 others do without:
 
 - **Required:** {class}`~pypu.models.RebalancedPU`, {class}`~pypu.models.IFPU`,
   {class}`~pypu.models.IFPNU`, {class}`~pypu.models.PUHellingerTree`,
-  {class}`~pypu.models.PUHellingerForest`, {class}`~pypu.models.UPUBoost`,
-  {class}`~pypu.models.NNPUBoost`, {class}`~pypu.models.ImbalancedNNPUBoost`.
+  {class}`~pypu.models.PUHellingerForest`, {class}`~pypu.models.PUExtraTrees`,
+  {class}`~pypu.models.UPUBoost`, {class}`~pypu.models.NNPUBoost`,
+  {class}`~pypu.models.ImbalancedNNPUBoost`.
 - **Used when given:** {class}`~pypu.models.NaivePU` (to set its threshold),
   {class}`~pypu.models.ElkanNoto` and {class}`~pypu.models.RankPruning` (instead of
   estimating the label frequency), {class}`~pypu.models.PUe` (instead of estimating the
@@ -36,8 +37,8 @@ with a model that needs none.
 `decision_function`, which is all that ROC AUC or a top-$k$ list needs. For labels, the
 models that estimate $P(y = 1 \mid x)$ or are built to classify, such as
 {class}`~pypu.models.ElkanNoto`, {class}`~pypu.models.RebalancedPU`,
-{class}`~pypu.models.SpyPU` and {class}`~pypu.models.RankPruning`, can be used with
-`predict` as they are. Others rank well but their probabilities are not calibrated, as
+{class}`~pypu.models.SpyPU`, {class}`~pypu.models.RankPruning` and
+{class}`~pypu.models.PUExtraTrees`, can be used with `predict` as they are. Others rank well but their probabilities are not calibrated, as
 their docstrings say: {class}`~pypu.models.IFPU`, {class}`~pypu.models.PUBagging`, the
 Hellinger trees and forests, and the probabilities of {class}`~pypu.models.BiasedSVM` and
 {class}`~pypu.models.PEBL`. When the prior is known, predicting the top $\pi$ fraction
@@ -53,7 +54,7 @@ the names `"EIF"`, `"OIF"`, `"LOF"` and `"DIF"` pick the extended isolation fore
 OptIForest, the local outlier factor or a deep isolation forest instead, and any
 scikit-learn or PyOD outlier detector can be given.
 
-**Which dependencies can you install?** Fourteen models need only scikit-learn and
+**Which dependencies can you install?** Fifteen models need only scikit-learn and
 LightGBM. The boosting models of the PU risks need XGBoost, and the neural models need
 PyTorch (see [Installation](../install.md)). Of IFPNU's named detectors, only the deep
 isolation forest needs more: PyOD and PyTorch.
@@ -75,6 +76,7 @@ Grouped as in the [API reference](../api/index.rst) and the
 | {class}`~pypu.models.PUBagging` | Classifiers of the labeled samples vs. bootstrap samples of the unlabeled ones | SCAR | no | |
 | {class}`~pypu.models.PUHellingerTree` | A decision tree with a Hellinger-distance split criterion for PU data | SCAR | required | |
 | {class}`~pypu.models.PUHellingerForest` | A random forest of those trees | SCAR | required | |
+| {class}`~pypu.models.PUExtraTrees` | Extremely randomized trees whose splits minimize the nnPU or uPU risk | SCAR | required | |
 | {class}`~pypu.models.BiasedSVM` | An SVM with class weights chosen by Lee and Liu's criterion | SCAR | no | |
 | {class}`~pypu.models.UPUBoost` | Gradient boosting on the unbiased PU risk | SCAR | required | XGBoost |
 | {class}`~pypu.models.NNPUBoost` | Gradient boosting on the objective of the nnPU experiments | SCAR | required | XGBoost |
@@ -140,8 +142,8 @@ runs every model this way, averaged over several splits.
 - Without a prior, try {class}`~pypu.models.ElkanNoto`, {class}`~pypu.models.SpyPU`,
   {class}`~pypu.models.RankPruning` and {class}`~pypu.models.BiasedSVM`: they are quick,
   need only scikit-learn, and estimate what they need from the data.
-- With a prior, add {class}`~pypu.models.RebalancedPU`, and the boosting models when the
-  data are non-linear: {class}`~pypu.models.IFPU`, or
+- With a prior, add {class}`~pypu.models.RebalancedPU`, and the tree ensembles when the
+  data are non-linear: {class}`~pypu.models.PUExtraTrees`, {class}`~pypu.models.IFPU`, or
   {class}`~pypu.models.UPUBoost` and {class}`~pypu.models.NNPUBoost` with XGBoost.
 - If the labels may be biased, start with {class}`~pypu.models.SAREM`, restricting its
   propensity to the features that drive labeling (`propensity_features=`).

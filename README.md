@@ -12,7 +12,7 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/pypu-learn?label=Python)](https://pypi.org/project/pypu-learn/)
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/izavits/PyPU/blob/main/LICENSE)
 
-> **Status: alpha.** Twenty models, PU data generation, evaluation and class-prior estimation
+> **Status: alpha.** Twenty-one models, PU data generation, evaluation and class-prior estimation
 > are available; the API may still change before 1.0. More methods are planned: see the
 > [roadmap](https://github.com/izavits/PyPU/blob/main/ROADMAP.md).
 
@@ -241,6 +241,7 @@ flexible classifier (`estimator=`) can help BBE on non-linear data.
 | `PUBagging` | Mordelet and Vert: classifiers trained on the labeled positives against bootstrap samples of the unlabeled ones | available |
 | `PUHellingerTree` | Decision tree whose splits maximize a Hellinger distance between estimated positives and negatives | available |
 | `PUHellingerForest` | Random forest of those trees, each on all labeled positives and a bootstrap sample of the unlabeled ones | available |
+| `PUExtraTrees` | Wilton et al.: extremely randomized trees whose splits minimize the nnPU (or uPU) risk | available |
 | `UPUBoost` | XGBoost on the unbiased PU risk (uPU) | available (`[xgboost]` extra) |
 | `NNPUBoost`, `ImbalancedNNPUBoost` | XGBoost on the objectives of the original nnPU and imbalanced nnPU experiments (weighted cross-entropies) | available (`[xgboost]` extra) |
 | `LBE` | Gong et al.: EM that learns a logistic classifier together with a logistic model of the labeling bias, as in the original experiments | available (`[torch]` extra) |
@@ -320,6 +321,18 @@ from pypu.models import PUHellingerForest, PUHellingerTree
 tree = PUHellingerTree(prior=0.2, max_depth=5, random_state=0).fit(X_train, s_train)
 forest = PUHellingerForest(prior=0.2, random_state=0).fit(X_train, s_train)
 scores = forest.predict_proba(X_test)[:, 1]  # rank samples; not calibrated
+```
+
+`PUExtraTrees` ports PU Extra Trees (Wilton et al., NeurIPS 2022), extremely randomized
+trees whose splits minimize the nnPU risk, as PU-Bench runs the authors' code; from the same
+seed its trees are the original's. Its probabilities estimate P(y = 1 | x), so `predict`
+can be used as it is:
+
+```python
+from pypu.models import PUExtraTrees
+
+forest = PUExtraTrees(prior=0.2, random_state=0).fit(X_train, s_train)
+y_pred = forest.predict(X_test)
 ```
 
 The boosting models (`pip install "pypu-learn[xgboost]"`) port the XGBoost objectives of the
